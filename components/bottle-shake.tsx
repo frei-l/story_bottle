@@ -23,21 +23,29 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
     for (let i = 0; i < 3; i++) {
       newSpheres.push({
         id: i,
-        x: Math.random() * 60 - 30,
-        y: Math.random() * 100 - 50,
-        size: Math.random() * 10 + 15,
+        x: Math.random() * 80 - 65,
+        y: Math.random() * 180 - 80,
+        size: 40,
         color: colors[i],
         delay: Math.random() * 2,
       })
     }
 
     // Generate 20-27 gray spheres
-    for (let i = 3; i < Math.floor(Math.random() * 8) + 23; i++) {
+    for (let i = 3; i < Math.floor(Math.random() * 8) + 40; i++) {
+      // Use grid-based positioning for more even distribution
+      const gridX = Math.floor(i / 5) // Create 5 columns
+      const gridY = i % 5 // Create 5 rows
+
+      // Add some controlled randomness within each grid cell
+      const xOffset = (Math.random() - 0.5) * 15 // Random offset within ±7.5
+      const yOffset = (Math.random() - 0.5) * 15
+
       newSpheres.push({
         id: i,
-        x: Math.random() * 60 - 30,
-        y: Math.random() * 100 - 50,
-        size: Math.random() * 8 + 5,
+        x: (gridX * 20 - 100) + xOffset, // Spread across -40 to 40
+        y: (gridY * 50 - 100) + yOffset, // Spread across -100 to 100
+        size: Math.random() * 20 + 30, // Vary size between 30-50
         color: `rgba(200, 200, 200, ${Math.random() * 0.4 + 0.1})`,
         delay: Math.random() * 2,
       })
@@ -68,18 +76,18 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
       <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full bg-[#FFD166] opacity-20 blur-3xl"></div>
 
       {/* App title */}
-      <div className="absolute top-12 left-0 right-0 text-center">
+      {/* <div className="absolute top-12 left-0 right-0 text-center">
         <h1 className="text-3xl font-medium text-neutral-800">Story Bottle</h1>
-      </div>
+      </div> */}
 
       <div className="relative flex flex-col items-center justify-center h-full w-full px-6">
         <motion.div
           animate={
             isShaking
               ? {
-                  x: [0, -10, 10, -10, 10, -5, 5, 0],
-                  rotate: [0, -3, 3, -3, 3, -1, 1, 0],
-                }
+                x: [0, -10, 10, -10, 10, -5, 5, 0],
+                rotate: [0, -3, 3, -3, 3, -1, 1, 0],
+              }
               : {}
           }
           transition={{ duration: 0.5 }}
@@ -100,14 +108,12 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
               }}
             >
               {/* Glass bottle */}
+              {/* Bottle neck */}
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-12 h-16 bg-gradient-to-b from-white/30 to-white/10 rounded-t-xl z-20"></div>
+              <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-8 h-4 bg-gradient-to-b from-white/30 to-white/10 rounded-full z-20"></div>
               <div className="w-48 h-72 rounded-3xl overflow-hidden relative">
                 {/* Glass texture */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-sm border border-white/30 shadow-lg rounded-3xl z-10"></div>
-
-                {/* Bottle neck */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-16 bg-gradient-to-b from-white/30 to-white/10 rounded-t-xl z-20"></div>
-                <div className="absolute top-16 left-1/2 -translate-x-1/2 w-8 h-4 bg-gradient-to-b from-white/30 to-white/10 rounded-full z-20"></div>
-
                 {/* Bottle interior */}
                 <div className="absolute inset-0 bg-white/5 backdrop-blur-md rounded-3xl overflow-hidden">
                   {/* Floating spheres */}
@@ -150,7 +156,7 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
             disabled={isShaking}
             className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-neutral-800 px-8 py-3 rounded-full hover:bg-white/30 transition-colors disabled:opacity-50 border border-white/30 shadow-lg"
           >
-            <Shake size={18} className="animate-bounce" />
+            {/* <Shake size={18} className="animate-bounce" /> */}
             <span>Shake Bottle</span>
           </button>
         </div>
