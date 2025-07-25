@@ -118,7 +118,7 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
               }}
               transition={{
                 duration: 1,
-                delay: ballState.startDelay + 2.5, // 在球到达瓶口后出现
+                delay: ballState.startDelay + 3.5, // 瓶子摇动1秒 + 移动到瓶口2.5秒后出现
                 ease: "easeOut",
               }}
             />
@@ -205,7 +205,7 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
                       }}
                       transition={{
                         duration: 2.5,
-                        delay: ballState.startDelay,
+                        delay: ballState.startDelay + 1, // 瓶子摇动1秒后开始移动
                       }}
                     />
                   )
@@ -241,11 +241,26 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
 
             <motion.div
               className="relative w-48 h-72"
-              animate={{ y: [0, -5, 0] }}
-              transition={{
-                repeat: Infinity,
-                duration: 3,
-              }}
+              animate={
+                ballsActivated
+                  ? {
+                      y: [0, -18, 18, -18, 18, -9, 9, 0], // 瓶身25%幅度摇动 (72px * 0.25 = 18px)
+                    }
+                  : {
+                      y: [0, -5, 0], // 默认轻微浮动
+                    }
+              }
+              transition={
+                ballsActivated
+                  ? {
+                      duration: 1, // 摇动持续1秒
+                      ease: "easeInOut",
+                    }
+                  : {
+                      repeat: Infinity,
+                      duration: 3,
+                    }
+              }
             >
               {/* Glass bottle */}
               {/* Bottle neck */}
