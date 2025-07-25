@@ -11,9 +11,22 @@ const caveat = Caveat({
 })
 
 export const metadata = {
-  title: "Story Bottle",
-  description: "A city-interactive storytelling app",
-    generator: 'v0.dev'
+  title: "摇一摇故事瓶",
+  description: "一个城市互动的故事讲述应用",
+  generator: 'Next.js',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: '故事瓶'
+  }
+}
+
+export const viewport = {
+  themeColor: '#F4C430',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({
@@ -22,7 +35,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      </head>
       <body className={`${caveat.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
