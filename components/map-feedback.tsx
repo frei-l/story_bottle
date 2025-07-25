@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Share2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Toast } from "@/components/ui/toast"
+import { motion } from "framer-motion"
+import { Check, Share2 } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface MapFeedbackProps {
   bottleType: string | null

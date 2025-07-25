@@ -1,10 +1,10 @@
 "use client"
 
 import { useBallStore, type BallState, type Sphere } from "@/lib/ball-store"
-import { motion, AnimatePresence } from "framer-motion"
-import { useEffect, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 
 export default function BottleShake() {
@@ -18,7 +18,7 @@ export default function BottleShake() {
     activateBalls,
     resetBalls
   } = useBallStore()
-  
+
   const [selectedStar, setSelectedStar] = useState<number | null>(null)
   const [showTransition, setShowTransition] = useState(false)
   const router = useRouter()
@@ -93,7 +93,7 @@ export default function BottleShake() {
           const centerY = (sphere.id) * 150 - 240 // -150, 0, 150 垂直间距
           const leftOffset = -100 // 偏左的位置
           const labels = ["星星1", "星星2", "星星3"]
-          
+
           return (
             <motion.div
               key={`center-${sphere.id}`}
@@ -140,7 +140,7 @@ export default function BottleShake() {
                   className="object-contain"
                 />
               </motion.div>
-              <motion.p 
+              <motion.p
                 className="ml-12 text-2xl text-neutral-700 font-light whitespace-nowrap"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -163,7 +163,7 @@ export default function BottleShake() {
     <div className="relative flex flex-col items-center justify-center h-full w-full overflow-hidden">
       {/* Warm gradient background with film grain */}
       <div className="absolute inset-0 bg-white"></div>
-      
+
       {/* 黄色填充动画 */}
       <AnimatePresence>
         {showTransition && selectedStar !== null && (
