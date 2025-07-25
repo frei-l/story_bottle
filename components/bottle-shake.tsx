@@ -341,10 +341,26 @@ export default function BottleShake() {
             </motion.div>
           </div>
         </motion.div>
-
-        <div className="text-center space-y-6 relative z-10">
-          <p className="text-neutral-700 font-light text-lg font-caveat">Shake to wake the stories</p>
-        </div>
+        {
+          !ballsActivated && (
+            <p className="text-neutral-700 font-light text-md font-caveat absolute bottom-20 left-1/2 -translate-x-1/2">摇一摇唤醒故事</p>
+          )
+        }
+        {
+          ballsActivated && (
+            <motion.p 
+              className="text-neutral-700 font-light text-md font-caveat absolute bottom-20 left-1/2 -translate-x-1/2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ 
+                duration: 0.8, 
+                delay: 5.5 // 在星星完全显现后显示 (ballState.startDelay最大值1 + 4.2 + 一些缓冲)
+              }}
+            >
+              轻点揭开你的故事
+            </motion.p>
+          )
+        }
       </div>
     </div>
   )
