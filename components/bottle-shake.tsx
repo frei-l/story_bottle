@@ -3,6 +3,7 @@
 import { useBallStore, type BallState, type Sphere } from "@/lib/ball-store"
 import { motion } from "framer-motion"
 import { useEffect } from "react"
+import Image from "next/image"
 
 
 export default function BottleShake() {
@@ -137,12 +138,12 @@ export default function BottleShake() {
   return (
     <div className="relative flex flex-col items-center justify-center h-full w-full overflow-hidden">
       {/* Warm gradient background with film grain */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#f8e9d6] to-[#ffd9c0]"></div>
+      <div className="absolute inset-0 bg-white"></div>
 
       {/* 背景虚化效果 - 当小球激活时显示 */}
       {ballsActivated && (
         <motion.div
-          className="absolute inset-0 bg-black/20 backdrop-blur-sm z-5"
+          className="absolute inset-0 backdrop-blur-sm z-5"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2, delay: 2.5 }}
@@ -150,11 +151,11 @@ export default function BottleShake() {
       )}
 
       {/* Film grain texture overlay */}
-      <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=400')] opacity-20 mix-blend-overlay pointer-events-none"></div>
+      {/* <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=400')] opacity-20 mix-blend-overlay pointer-events-none"></div> */}
 
       {/* Light leaks */}
-      <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#FF6F61] opacity-20 blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full bg-[#FFD166] opacity-20 blur-3xl"></div>
+      {/* <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#FF6F61] opacity-20 blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full bg-[#FFD166] opacity-20 blur-3xl"></div> */}
 
       {/* 屏幕中央的球（固定定位） */}
       {getCenterBalls()}
@@ -171,21 +172,18 @@ export default function BottleShake() {
           onClick={activateBalls}
         >
           {/* Bottle container */}
-          <div className="relative w-48 h-72">
+          <div className="relative w-96 h-[576px]">
             {/* Bottle glow */}
             <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl"></div>
 
 
             <motion.div
-              className="relative w-48 h-72"
+              className="relative w-96 h-[576px]"
               animate={
                 ballsActivated
                   ? {
-                    y: [0, -18, 18, -18, 18, -9, 9, 0], // 瓶身25%幅度摇动 (72px * 0.25 = 18px)
-                  }
-                  : {
-                    y: [0, -5, 0], // 默认轻微浮动
-                  }
+                    y: [0, -36, 36, -36, 36, -18, 18, 0], // 瓶身摇动幅度调整为更大尺寸
+                  }: {}
               }
               transition={
                 ballsActivated
@@ -193,21 +191,20 @@ export default function BottleShake() {
                     duration: 1, // 摇动持续1秒
                     ease: "easeInOut",
                   }
-                  : {
-                    repeat: Infinity,
-                    duration: 3,
-                  }
+                  : {}
               }
             >
-              {/* Glass bottle */}
-              {/* Bottle neck */}
-              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-12 h-16 bg-gradient-to-b from-white/30 to-white/10 rounded-t-xl z-20"></div>
-              <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-8 h-4 bg-gradient-to-b from-white/30 to-white/10 rounded-full z-20"></div>
-              <div className="w-48 h-72 rounded-3xl overflow-hidden relative">
-                {/* Glass texture */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-sm border border-white/30 shadow-lg rounded-3xl z-10"></div>
-                {/* Bottle interior */}
-                <div className="absolute inset-0 bg-white/5 backdrop-blur-md rounded-3xl overflow-hidden">
+              {/* Bottle image */}
+              <Image
+                src="/bottle.png"
+                alt="Story Bottle"
+                width={1000}
+                height={1000}
+                className="object-contain relative z-10"
+              />
+              {/* Bottle interior for spheres */}
+              <div className="absolute inset-0 w-96 h-[576px] overflow-hidden">
+                <div className="absolute inset-4 rounded-3xl overflow-hidden">
                   {/* 彩色小球和附近的灰色小球渲染在瓶子内 */}
                   {spheres.map((sphere) => {
                     const isColoredBall = sphere.id < 3
@@ -235,7 +232,7 @@ export default function BottleShake() {
                             }}
                             animate={{
                               x: 0,
-                              y: -300, // 移动到瓶口
+                              y: -450, // 移动到瓶口（调整为更大瓶子的距离）
                               scale: 0.8,
                               opacity: 0, // 逐渐消失
                             }}
