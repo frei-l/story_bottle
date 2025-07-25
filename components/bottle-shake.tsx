@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ShuffleIcon as Shake } from "lucide-react"
+import { useBallStore, type Sphere, type BallState } from "@/lib/ball-store"
+import { useBallAnimation } from "@/hooks/use-ball-animation"
 
 interface BottleShakeProps {
   onShake: () => void
@@ -10,14 +11,26 @@ interface BottleShakeProps {
 
 export default function BottleShake({ onShake }: BottleShakeProps) {
   const [isShaking, setIsShaking] = useState(false)
-  const [spheres, setSpheres] = useState<
-    Array<{ id: number; x: number; y: number; size: number; color: string; delay: number }>
-  >([])
+  
+  // 使用 zustand store
+  const {
+    spheres,
+    ballsActivated,
+    ballStates,
+    setSpheres,
+    setBallStates,
+    activateBalls,
+    resetBalls
+  } = useBallStore()
+
+  // 使用动画 hook
+  const { getColoredBallAnimation } = useBallAnimation()
 
   useEffect(() => {
     // Generate random spheres
-    const newSpheres = []
+    const newSpheres: Sphere[] = []
     const colors = ["#FF6F61", "#FFD166", "#6FFFB0"]
+    const newBallStates: BallState[] = []
 
     // Generate 3 colorful spheres
     for (let i = 0; i < 3; i++) {
@@ -28,6 +41,13 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
         size: 40,
         color: colors[i],
         delay: Math.random() * 2,
+      })
+      
+      // 初始化彩色小球状态
+      newBallStates.push({
+        id: i,
+        stage: 'floating',
+        startDelay: i * 0.5, // 每个球延迟0.5秒
       })
     }
 
@@ -52,7 +72,8 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
     }
 
     setSpheres(newSpheres)
-  }, [])
+    setBallStates(newBallStates)
+  }, [setSpheres, setBallStates])
 
   // Simulate shake detection with a button for demo purposes
   const handleShakeButton = () => {
@@ -63,10 +84,65 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
     }, 1500)
   }
 
+  // 获取屏幕中央的彩色球（使用固定定位）
+  const getCenterBalls = () => {
+    return spheres
+      .filter(sphere => sphere.id < 3)
+      .map(sphere => {
+        const ballState = ballStates.find(b => b.id === sphere.id)
+        if (ballState?.stage === 'activated') {
+          const centerX = (sphere.id - 1) * 120 // -120, 0, 120
+          return (
+            <motion.div
+              key={`center-${sphere.id}`}
+              className="fixed rounded-full z-50"
+              style={{
+                width: `${sphere.size}px`,
+                height: `${sphere.size}px`,
+                backgroundColor: sphere.color,
+                boxShadow: `0 0 20px ${sphere.color}`,
+                left: '50%',
+                top: '50%',
+              }}
+              initial={{
+                x: -sphere.size / 2,
+                y: -sphere.size / 2,
+                scale: 0,
+                opacity: 0,
+              }}
+              animate={{
+                x: centerX - sphere.size / 2,
+                y: -sphere.size / 2,
+                scale: 1.3,
+                opacity: 1,
+              }}
+              transition={{
+                duration: 1,
+                delay: ballState.startDelay + 2.5, // 在球到达瓶口后出现
+                ease: "easeOut",
+              }}
+            />
+          )
+        }
+        return null
+      })
+      .filter(Boolean)
+  }
+
   return (
     <div className="relative flex flex-col items-center justify-center h-full w-full overflow-hidden">
       {/* Warm gradient background with film grain */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#f8e9d6] to-[#ffd9c0]"></div>
+
+      {/* 背景虚化效果 - 当小球激活时显示 */}
+      {ballsActivated && (
+        <motion.div 
+          className="absolute inset-0 bg-black/20 backdrop-blur-sm z-5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 2, delay: 2.5 }}
+        />
+      )}
 
       {/* Film grain texture overlay */}
       <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=400')] opacity-20 mix-blend-overlay pointer-events-none"></div>
@@ -74,6 +150,9 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
       {/* Light leaks */}
       <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#FF6F61] opacity-20 blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full bg-[#FFD166] opacity-20 blur-3xl"></div>
+
+      {/* 屏幕中央的球（固定定位） */}
+      {getCenterBalls()}
 
       {/* App title */}
       {/* <div className="absolute top-12 left-0 right-0 text-center">
@@ -98,13 +177,74 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
             {/* Bottle glow */}
             <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl"></div>
 
+            {/* 彩色小球渲染在瓶子内，只在未到达中央时显示 */}
+            {spheres.map((sphere) => {
+              const isColoredBall = sphere.id < 3
+              if (isColoredBall) {
+                const ballState = ballStates.find(b => b.id === sphere.id)
+                
+                // 如果球已激活，显示移动到瓶口的动画
+                if (ballsActivated && ballState?.stage === 'activated') {
+                  return (
+                    <motion.div
+                      key={sphere.id}
+                      className="absolute rounded-full z-30"
+                      style={{
+                        width: `${sphere.size}px`,
+                        height: `${sphere.size}px`,
+                        backgroundColor: sphere.color,
+                        boxShadow: `0 0 15px ${sphere.color}`,
+                        left: `calc(50% + ${sphere.x}px)`,
+                        top: `calc(50% + ${sphere.y}px)`,
+                      }}
+                      animate={{
+                        x: 0,
+                        y: -300, // 移动到瓶口
+                        scale: 0.8,
+                        opacity: 0, // 逐渐消失
+                      }}
+                      transition={{
+                        duration: 2.5,
+                        delay: ballState.startDelay,
+                      }}
+                    />
+                  )
+                } else {
+                  // 未激活状态：显示浮动动画
+                  return (
+                    <motion.div
+                      key={sphere.id}
+                      className="absolute rounded-full z-30"
+                      style={{
+                        width: `${sphere.size}px`,
+                        height: `${sphere.size}px`,
+                        backgroundColor: sphere.color,
+                        boxShadow: `0 0 15px ${sphere.color}`,
+                        left: `calc(50% + ${sphere.x}px)`,
+                        top: `calc(50% + ${sphere.y}px)`,
+                      }}
+                      animate={{
+                        x: [0, 10, -5, 8, 0],
+                        y: [0, -8, 12, -5, 0],
+                        scale: [1, 1.05, 0.95, 1.02, 1],
+                      }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 10 + sphere.delay,
+                        delay: sphere.delay,
+                      }}
+                    />
+                  )
+                }
+              }
+            })}
+
             <motion.div
               className="relative w-48 h-72"
               animate={{ y: [0, -5, 0] }}
               transition={{
-                repeat: Number.POSITIVE_INFINITY,
+                repeat: Infinity,
                 duration: 3,
-                ease: "easeInOut",
               }}
             >
               {/* Glass bottle */}
@@ -116,31 +256,35 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-sm border border-white/30 shadow-lg rounded-3xl z-10"></div>
                 {/* Bottle interior */}
                 <div className="absolute inset-0 bg-white/5 backdrop-blur-md rounded-3xl overflow-hidden">
-                  {/* Floating spheres */}
-                  {spheres.map((sphere) => (
-                    <motion.div
-                      key={sphere.id}
-                      className="absolute rounded-full"
-                      style={{
-                        width: `${sphere.size}px`,
-                        height: `${sphere.size}px`,
-                        backgroundColor: sphere.color,
-                        boxShadow: sphere.color.startsWith("#") ? `0 0 15px ${sphere.color}` : "none",
-                        left: `calc(50% + ${sphere.x}px)`,
-                        top: `calc(50% + ${sphere.y}px)`,
-                      }}
-                      animate={{
-                        x: [0, 10, -5, 8, 0],
-                        y: [0, -8, 12, -5, 0],
-                      }}
-                      transition={{
-                        repeat: Number.POSITIVE_INFINITY,
-                        duration: 10 + sphere.delay,
-                        ease: "easeInOut",
-                        delay: sphere.delay,
-                      }}
-                    />
-                  ))}
+                  {/* Floating gray spheres */}
+                  {spheres.map((sphere) => {
+                    const isColoredBall = sphere.id < 3
+                    if (!isColoredBall) {
+                      // 灰色小球保持原有动画
+                      return (
+                        <motion.div
+                          key={sphere.id}
+                          className="absolute rounded-full"
+                          style={{
+                            width: `${sphere.size}px`,
+                            height: `${sphere.size}px`,
+                            backgroundColor: sphere.color,
+                            left: `calc(50% + ${sphere.x}px)`,
+                            top: `calc(50% + ${sphere.y}px)`,
+                          }}
+                          animate={{
+                            x: [0, 10, -5, 8, 0],
+                            y: [0, -8, 12, -5, 0],
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 10 + sphere.delay,
+                            delay: sphere.delay,
+                          }}
+                        />
+                      )
+                    }
+                  })}
                 </div>
               </div>
             </motion.div>
@@ -150,14 +294,21 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
         <div className="text-center space-y-6 relative z-10">
           <p className="text-neutral-700 font-light text-lg font-caveat">Shake to wake the stories</p>
 
-          {/* Shake button for demo purposes */}
+          {/* 激活彩色小球按钮 */}
           <button
-            onClick={handleShakeButton}
-            disabled={isShaking}
-            className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-neutral-800 px-8 py-3 rounded-full hover:bg-white/30 transition-colors disabled:opacity-50 border border-white/30 shadow-lg"
+            onClick={activateBalls}
+            disabled={ballsActivated}
+            className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-neutral-800 px-8 py-3 rounded-full hover:bg-white/30 transition-colors disabled:opacity-50 border border-white/30 shadow-lg mr-4"
           >
-            {/* <Shake size={18} className="animate-bounce" /> */}
-            <span>Shake Bottle</span>
+            <span>Activate Balls</span>
+          </button>
+
+          {/* 重置按钮 */}
+          <button
+            onClick={resetBalls}
+            className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-neutral-800 px-8 py-3 rounded-full hover:bg-white/30 transition-colors border border-white/30 shadow-lg"
+          >
+            <span>Reset</span>
           </button>
         </div>
       </div>
