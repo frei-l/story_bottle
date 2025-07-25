@@ -43,7 +43,7 @@ export default function BottleShake() {
     }
 
     // Generate 20-27 gray spheres
-    for (let i = 3; i < Math.floor(Math.random() * 8) + 40; i++) {
+    for (let i = 3; i < 60; i++) {
       // Use grid-based positioning for more even distribution
       const gridX = Math.floor(i / 5) // Create 5 columns
       const gridY = i % 5 // Create 5 rows
@@ -60,6 +60,28 @@ export default function BottleShake() {
         color: `rgba(200, 200, 200, ${Math.random() * 0.4 + 0.1})`,
         delay: Math.random() * 2,
       })
+    }
+
+    // 为每个彩色小球附近生成3个灰色小球
+    for (let colorId = 0; colorId < 3; colorId++) {
+      const coloredBall = newSpheres[colorId]
+      for (let j = 0; j < 2; j++) {
+        const nearbyGrayId = 60 + colorId * 2 + j
+        // 在彩色小球附近随机生成位置
+        const angle = Math.random() * Math.PI * 2
+        const distance = Math.random() * 30 + 10 // 距离彩色小球30-90像素
+        const nearbyX = coloredBall.x + Math.cos(angle) * distance
+        const nearbyY = coloredBall.y + Math.sin(angle) * distance
+
+        newSpheres.push({
+          id: nearbyGrayId,
+          x: nearbyX,
+          y: nearbyY,
+          size: Math.random() * 20 + 25, // 稍小一些，25-45
+          color: `rgba(200, 200, 200, ${Math.random() * 0.4 + 0.1})`,
+          delay: Math.random() * 2,
+        })
+      }
     }
 
     setSpheres(newSpheres)
@@ -152,67 +174,6 @@ export default function BottleShake() {
             {/* Bottle glow */}
             <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl"></div>
 
-            {/* 彩色小球渲染在瓶子内，只在未到达中央时显示 */}
-            {spheres.map((sphere) => {
-              const isColoredBall = sphere.id < 3
-              if (isColoredBall) {
-                const ballState = ballStates.find(b => b.id === sphere.id)
-
-                // 如果球已激活，显示移动到瓶口的动画
-                if (ballsActivated && ballState?.stage === 'activated') {
-                  return (
-                    <motion.div
-                      key={sphere.id}
-                      className="absolute rounded-full z-30"
-                      style={{
-                        width: `${sphere.size}px`,
-                        height: `${sphere.size}px`,
-                        backgroundColor: sphere.color,
-                        boxShadow: `0 0 15px ${sphere.color}`,
-                        left: `calc(50% + ${sphere.x}px)`,
-                        top: `calc(50% + ${sphere.y}px)`,
-                      }}
-                      animate={{
-                        x: 0,
-                        y: -300, // 移动到瓶口
-                        scale: 0.8,
-                        opacity: 0, // 逐渐消失
-                      }}
-                      transition={{
-                        duration: 2.5,
-                        delay: ballState.startDelay + 1, // 瓶子摇动1秒后开始移动
-                      }}
-                    />
-                  )
-                } else {
-                  // 未激活状态：显示浮动动画
-                  return (
-                    <motion.div
-                      key={sphere.id}
-                      className="absolute rounded-full z-30"
-                      style={{
-                        width: `${sphere.size}px`,
-                        height: `${sphere.size}px`,
-                        backgroundColor: sphere.color,
-                        boxShadow: `0 0 15px ${sphere.color}`,
-                        left: `calc(50% + ${sphere.x}px)`,
-                        top: `calc(50% + ${sphere.y}px)`,
-                      }}
-                      animate={{
-                        x: [0, 10, -5, 8, 0],
-                        y: [0, -8, 12, -5, 0],
-                        scale: [1, 1.05, 0.95, 1.02, 1],
-                      }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 10 + sphere.delay,
-                        delay: sphere.delay,
-                      }}
-                    />
-                  )
-                }
-              }
-            })}
 
             <motion.div
               className="relative w-48 h-72"
@@ -246,11 +207,72 @@ export default function BottleShake() {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-sm border border-white/30 shadow-lg rounded-3xl z-10"></div>
                 {/* Bottle interior */}
                 <div className="absolute inset-0 bg-white/5 backdrop-blur-md rounded-3xl overflow-hidden">
-                  {/* Floating gray spheres */}
+                  {/* 彩色小球和附近的灰色小球渲染在瓶子内 */}
                   {spheres.map((sphere) => {
                     const isColoredBall = sphere.id < 3
-                    if (!isColoredBall) {
-                      // 灰色小球保持原有动画
+                    const isNearbyGrayBall = sphere.id >= 60 && sphere.id < 69 // 每个彩色小球附近的3个灰色小球
+
+                    if (isColoredBall) {
+                      const ballState = ballStates.find(b => b.id === sphere.id)
+                      // 彩色小球的z-index: 20-35 范围内，基于id分配
+                      const coloredBallZIndex = 1
+
+                      // 如果球已激活，显示移动到瓶口的动画
+                      if (ballsActivated && ballState?.stage === 'activated') {
+                        return (
+                          <motion.div
+                            key={sphere.id}
+                            className="absolute rounded-full"
+                            style={{
+                              width: `${sphere.size}px`,
+                              height: `${sphere.size}px`,
+                              backgroundColor: sphere.color,
+                              boxShadow: `0 0 15px ${sphere.color}`,
+                              left: `calc(50% + ${sphere.x}px)`,
+                              top: `calc(50% + ${sphere.y}px)`,
+                              zIndex: coloredBallZIndex,
+                            }}
+                            animate={{
+                              x: 0,
+                              y: -300, // 移动到瓶口
+                              scale: 0.8,
+                              opacity: 0, // 逐渐消失
+                            }}
+                            transition={{
+                              duration: 2.5,
+                              delay: ballState.startDelay + 1, // 瓶子摇动1秒后开始移动
+                            }}
+                          />
+                        )
+                      } else {
+                        // 未激活状态：显示浮动动画
+                        return (
+                          <motion.div
+                            key={sphere.id}
+                            className="absolute rounded-full"
+                            style={{
+                              width: `${sphere.size}px`,
+                              height: `${sphere.size}px`,
+                              backgroundColor: sphere.color,
+                              boxShadow: `0 0 15px ${sphere.color}`,
+                              left: `calc(50% + ${sphere.x}px)`,
+                              top: `calc(50% + ${sphere.y}px)`,
+                              zIndex: coloredBallZIndex,
+                            }}
+                            animate={{
+                              x: [0, 10, -5, 8, 0],
+                              y: [0, -8, 12, -5, 0],
+                            }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 10 + sphere.delay,
+                              delay: sphere.delay,
+                            }}
+                          />
+                        )
+                      }
+                    } else if (isNearbyGrayBall) {
+                      // 渲染彩色小球附近的灰色小球
                       return (
                         <motion.div
                           key={sphere.id}
@@ -261,6 +283,39 @@ export default function BottleShake() {
                             backgroundColor: sphere.color,
                             left: `calc(50% + ${sphere.x}px)`,
                             top: `calc(50% + ${sphere.y}px)`,
+                            zIndex: 1, // 与彩色小球同层
+                          }}
+                          animate={{
+                            x: [0, 10, -5, 8, 0],
+                            y: [0, -8, 12, -5, 0],
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 10 + sphere.delay,
+                            delay: sphere.delay,
+                          }}
+                        />
+                      )
+                    }
+                  })}
+                  {/* Floating gray spheres */}
+                  {spheres.map((sphere) => {
+                    const isColoredBall = sphere.id < 3
+                    if (!isColoredBall) {
+                      // 灰色小球的z-index: 10-30 范围内，基于id和位置创建层次感
+                      const grayBallZIndex = 15 + (sphere.id % 20) + Math.floor(sphere.y / 20)
+
+                      return (
+                        <motion.div
+                          key={sphere.id}
+                          className="absolute rounded-full"
+                          style={{
+                            width: `${sphere.size}px`,
+                            height: `${sphere.size}px`,
+                            backgroundColor: sphere.color,
+                            left: `calc(50% + ${sphere.x}px)`,
+                            top: `calc(50% + ${sphere.y}px)`,
+                            zIndex: grayBallZIndex,
                           }}
                           animate={{
                             x: [0, 10, -5, 8, 0],
