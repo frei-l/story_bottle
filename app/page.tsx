@@ -56,7 +56,7 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        <Navigation currentScreen={currentScreen} onNavigate={handleNavigate} />
+        {/* <Navigation currentScreen={currentScreen} onNavigate={handleNavigate} /> */}
       </div>
     </main>
   )

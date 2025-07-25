@@ -167,7 +167,8 @@ export default function BottleShake() {
       <div className="relative flex flex-col items-center justify-center h-full w-full px-6">
         <motion.div
           transition={{ duration: 0.5 }}
-          className="relative mb-12"
+          className="relative mb-12 cursor-pointer"
+          onClick={activateBalls}
         >
           {/* Bottle container */}
           <div className="relative w-48 h-72">
@@ -338,23 +339,6 @@ export default function BottleShake() {
 
         <div className="text-center space-y-6 relative z-10">
           <p className="text-neutral-700 font-light text-lg font-caveat">Shake to wake the stories</p>
-
-          {/* 激活彩色小球按钮 */}
-          <button
-            onClick={activateBalls}
-            disabled={ballsActivated}
-            className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-neutral-800 px-8 py-3 rounded-full hover:bg-white/30 transition-colors disabled:opacity-50 border border-white/30 shadow-lg mr-4"
-          >
-            <span>Activate Balls</span>
-          </button>
-
-          {/* 重置按钮 */}
-          <button
-            onClick={resetBalls}
-            className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-md text-neutral-800 px-8 py-3 rounded-full hover:bg-white/30 transition-colors border border-white/30 shadow-lg"
-          >
-            <span>Reset</span>
-          </button>
         </div>
       </div>
     </div>
