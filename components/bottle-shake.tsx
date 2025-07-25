@@ -1,9 +1,10 @@
 "use client"
 
 import { useBallStore, type BallState, type Sphere } from "@/lib/ball-store"
-import { motion } from "framer-motion"
-import { useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 
 export default function BottleShake() {
@@ -17,6 +18,10 @@ export default function BottleShake() {
     activateBalls,
     resetBalls
   } = useBallStore()
+  
+  const [selectedStar, setSelectedStar] = useState<number | null>(null)
+  const [showTransition, setShowTransition] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     // Generate random spheres
@@ -70,6 +75,13 @@ export default function BottleShake() {
     setBallStates(newBallStates)
   }, [setSpheres, setBallStates])
 
+  const handleStarClick = (starId: number) => {
+    setSelectedStar(starId)
+    setShowTransition(true)
+    setTimeout(() => {
+      router.push('/next-page') // 跳转到下一页
+    }, 1500) // 动画持续1.5秒后跳转
+  }
 
   // 获取屏幕中央的球（使用固定定位）
   const getCenterBalls = () => {
@@ -117,6 +129,8 @@ export default function BottleShake() {
                   duration: 0.5,
                   delay: ballState.startDelay + 4, // 稍微延迟缩放效果
                 }}
+                className="cursor-pointer"
+                onClick={() => handleStarClick(sphere.id)}
               >
                 <Image
                   src="/star-yellow.png"
@@ -149,6 +163,28 @@ export default function BottleShake() {
     <div className="relative flex flex-col items-center justify-center h-full w-full overflow-hidden">
       {/* Warm gradient background with film grain */}
       <div className="absolute inset-0 bg-white"></div>
+      
+      {/* 黄色填充动画 */}
+      <AnimatePresence>
+        {showTransition && selectedStar !== null && (
+          <motion.div
+            className="fixed inset-0 z-[100]"
+            style={{
+              background: 'radial-gradient(circle at center, #E6B800 0%, #F4C430 30%, #F2D98D 70%, #F5E6D3 100%)'
+            }}
+            initial={{
+              clipPath: `circle(0px at ${selectedStar === 0 ? '40%' : selectedStar === 1 ? '40%' : '40%'} ${selectedStar === 0 ? '25%' : selectedStar === 1 ? '50%' : '65%'})`
+            }}
+            animate={{
+              clipPath: 'circle(150% at 50% 50%)'
+            }}
+            transition={{
+              duration: 1.5,
+              ease: "easeInOut"
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* 背景虚化效果 - 当小球激活时显示 */}
       {ballsActivated && (
