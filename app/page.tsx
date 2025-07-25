@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import BottleShake from "@/components/bottle-shake"
-import BottleSelection from "@/components/bottle-selection"
 import MapFeedback from "@/components/map-feedback"
 import FootprintsPage from "@/components/footprints-page"
 import Navigation from "@/components/navigation"
@@ -11,16 +10,6 @@ import Navigation from "@/components/navigation"
 export default function Home() {
   const [currentScreen, setCurrentScreen] = useState<"home" | "selection" | "map" | "footprints">("home")
   const [selectedBottle, setSelectedBottle] = useState<string | null>(null)
-
-  const handleShake = () => {
-    // Simulate shake detection
-    setCurrentScreen("selection")
-  }
-
-  const handleBottleSelect = (bottleType: string) => {
-    setSelectedBottle(bottleType)
-    setCurrentScreen("map")
-  }
 
   const handleNavigate = (screen: "home" | "selection" | "map" | "footprints") => {
     setCurrentScreen(screen)
@@ -38,19 +27,7 @@ export default function Home() {
               exit={{ opacity: 0 }}
               className="absolute inset-0"
             >
-              <BottleShake onShake={handleShake} />
-            </motion.div>
-          )}
-
-          {currentScreen === "selection" && (
-            <motion.div
-              key="selection"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0"
-            >
-              <BottleSelection onSelect={handleBottleSelect} />
+              <BottleShake />
             </motion.div>
           )}
 

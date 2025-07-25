@@ -1,17 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useBallStore, type BallState, type Sphere } from "@/lib/ball-store"
 import { motion } from "framer-motion"
-import { useBallStore, type Sphere, type BallState } from "@/lib/ball-store"
-import { useBallAnimation } from "@/hooks/use-ball-animation"
+import { useEffect } from "react"
 
-interface BottleShakeProps {
-  onShake: () => void
-}
 
-export default function BottleShake({ onShake }: BottleShakeProps) {
-  const [isShaking, setIsShaking] = useState(false)
-  
+export default function BottleShake() {
   // 使用 zustand store
   const {
     spheres,
@@ -22,9 +16,6 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
     activateBalls,
     resetBalls
   } = useBallStore()
-
-  // 使用动画 hook
-  const { getColoredBallAnimation } = useBallAnimation()
 
   useEffect(() => {
     // Generate random spheres
@@ -42,7 +33,7 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
         color: colors[i],
         delay: Math.random() * 2,
       })
-      
+
       // 初始化彩色小球状态
       newBallStates.push({
         id: i,
@@ -75,14 +66,6 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
     setBallStates(newBallStates)
   }, [setSpheres, setBallStates])
 
-  // Simulate shake detection with a button for demo purposes
-  const handleShakeButton = () => {
-    setIsShaking(true)
-    setTimeout(() => {
-      setIsShaking(false)
-      onShake()
-    }, 1500)
-  }
 
   // 获取屏幕中央的彩色球（使用固定定位）
   const getCenterBalls = () => {
@@ -136,7 +119,7 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
 
       {/* 背景虚化效果 - 当小球激活时显示 */}
       {ballsActivated && (
-        <motion.div 
+        <motion.div
           className="absolute inset-0 bg-black/20 backdrop-blur-sm z-5"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -161,14 +144,6 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
 
       <div className="relative flex flex-col items-center justify-center h-full w-full px-6">
         <motion.div
-          animate={
-            isShaking
-              ? {
-                x: [0, -10, 10, -10, 10, -5, 5, 0],
-                rotate: [0, -3, 3, -3, 3, -1, 1, 0],
-              }
-              : {}
-          }
           transition={{ duration: 0.5 }}
           className="relative mb-12"
         >
@@ -182,7 +157,7 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
               const isColoredBall = sphere.id < 3
               if (isColoredBall) {
                 const ballState = ballStates.find(b => b.id === sphere.id)
-                
+
                 // 如果球已激活，显示移动到瓶口的动画
                 if (ballsActivated && ballState?.stage === 'activated') {
                   return (
@@ -244,22 +219,22 @@ export default function BottleShake({ onShake }: BottleShakeProps) {
               animate={
                 ballsActivated
                   ? {
-                      y: [0, -18, 18, -18, 18, -9, 9, 0], // 瓶身25%幅度摇动 (72px * 0.25 = 18px)
-                    }
+                    y: [0, -18, 18, -18, 18, -9, 9, 0], // 瓶身25%幅度摇动 (72px * 0.25 = 18px)
+                  }
                   : {
-                      y: [0, -5, 0], // 默认轻微浮动
-                    }
+                    y: [0, -5, 0], // 默认轻微浮动
+                  }
               }
               transition={
                 ballsActivated
                   ? {
-                      duration: 1, // 摇动持续1秒
-                      ease: "easeInOut",
-                    }
+                    duration: 1, // 摇动持续1秒
+                    ease: "easeInOut",
+                  }
                   : {
-                      repeat: Infinity,
-                      duration: 3,
-                    }
+                    repeat: Infinity,
+                    duration: 3,
+                  }
               }
             >
               {/* Glass bottle */}
