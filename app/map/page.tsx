@@ -1,12 +1,23 @@
 "use client"
 import Navigation from "@/components/navigation";
-import OpenStreetMap from "@/components/map/OpenStreetMap";
+import BasicMap from "@/components/map";
 import { Link, Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+
 export default function Home() {
   const router = useRouter();
+  // 以中心点为基准，1公里内均匀分布几个点
+  const defaultLocations = [
+    { lng: 120.003618, lat: 30.295699 }, // 中心点
+    { lng: 120.011618, lat: 30.295699 }, // 东约800米
+    { lng: 119.995618, lat: 30.295699 }, // 西约800米
+    { lng: 120.003618, lat: 30.304699 }, // 北约1公里
+    { lng: 120.003618, lat: 30.286699 }, // 南约1公里
+    { lng: 120.008618, lat: 30.300699 }, // 东北约700米
+    { lng: 119.998618, lat: 30.290699 }, // 西南约700米
+  ];
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <div className="relative w-full max-w-md h-[100dvh] overflow-hidden flex flex-col">
@@ -23,7 +34,7 @@ export default function Home() {
         {/* 地图容器 - 占据屏幕1/2 */}
         <div className="h-1/2 flex items-center justify-center p-4">
           <div className="w-full h-full rounded-lg overflow-hidden">
-            <OpenStreetMap />
+            <BasicMap markerType="bubble" locations={defaultLocations} />
           </div>
         </div>
 
