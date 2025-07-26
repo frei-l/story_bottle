@@ -64,16 +64,14 @@ export const useBallStore = create<BallStore>((set, get) => ({
         if (withVibration && typeof window !== 'undefined') {
             import('../lib/haptics').then(({ triggerVibration }) => {
                 // 模拟瓶子摇晃的震动模式：1秒持续震动
-                // 对应瓶子动画的摇晃节奏
+                // 对应瓶子动画的摇晃节奏，降低频率增强震感
                 const shakePattern = [
-                    40, 60,  // 第一次摇晃
-                    40, 60,  // 第二次摇晃  
-                    40, 60,  // 第三次摇晃
-                    40, 60,  // 第四次摇晃
-                    40, 60,  // 第五次摇晃
-                    30, 40,  // 第六次摇晃（减弱）
-                    30, 40,  // 第七次摇晃（减弱）
-                    20       // 最后一次轻微震动
+                    80, 120,  // 第一次摇晃（更强）
+                    80, 120,  // 第二次摇晃
+                    80, 120,  // 第三次摇晃
+                    60, 100,  // 第四次摇晃（稍弱）
+                    60, 100,  // 第五次摇晃
+                    40        // 最后一次轻微震动
                 ]
                 triggerVibration(shakePattern)
             })
