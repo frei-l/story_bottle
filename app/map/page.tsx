@@ -35,7 +35,7 @@ export default function Home() {
           </button>
 
           {/* 底部文字和星星 */}
-          <div className="flex items-center justify-between mx-14 mt-12">
+          <div className="flex items-center justify-center gap-12 mt-12">
             <span className="text-gray-600 text-sm">你所在的街区有X条故事~</span>
             <Image
               src="/star_yellow_eyes.png"
