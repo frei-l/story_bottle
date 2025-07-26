@@ -48,6 +48,16 @@ export default function BottleShake() {
   // 初始化运动检测
   useEffect(() => {
     const initMotionDetection = async () => {
+      // 在开发环境下强制启用点击功能
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[BottleShake] 开发环境：强制启用点击功能')
+        setMotionSupported(false)
+        setMotionEnabled(false)
+        setClickEnabled(true)
+        setNeedsPermission(false)
+        return
+      }
+
       // 创建运动检测器实例
       const detector = new MotionDetector(() => {
         console.log('[BottleShake] 检测到晃动，触发瓶子动画')
@@ -102,6 +112,11 @@ export default function BottleShake() {
 
   // 获取提示文字
   const getPromptText = () => {
+    // 开发环境下显示特殊提示
+    if (process.env.NODE_ENV === 'development') {
+      return '【开发模式】点击瓶子唤醒故事'
+    }
+    
     if (needsPermission) {
       return '需要获取运动传感器权限以启用摇一摇功能'
     } else if (motionEnabled) {
