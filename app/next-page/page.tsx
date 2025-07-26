@@ -3,9 +3,12 @@
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 export default function NextPage() {
+  const router = useRouter()
   const [isAnimated, setIsAnimated] = useState(false)
+  const [showButton, setShowButton] = useState(false)
   const [likeActive, setLikeActive] = useState(false)
   const [saveActive, setSaveActive] = useState(false)
   const [dislikeActive, setDislikeActive] = useState(false)
@@ -14,6 +17,11 @@ export default function NextPage() {
     setTimeout(() => {
       setIsAnimated(true)
     }, 1000)
+    
+    // Show button after the paper animation is complete
+    setTimeout(() => {
+      setShowButton(true)
+    }, 2200) // 1000ms delay + 1200ms animation duration
   }, [])
 
   const handleLikeClick = () => {
@@ -28,10 +36,31 @@ export default function NextPage() {
     setDislikeActive(!dislikeActive)
   }
 
+  const handleGoHome = () => {
+    router.push("/")
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{
+    <div className="min-h-screen flex items-center justify-center relative" style={{
       background: 'radial-gradient(circle at center, #E6B800 0%, #F4C430 30%, #F2D98D 70%, #F5E6D3 100%)'
     }}>
+      {/* Greeting star in top-right corner */}
+      <div className="absolute top-0 right-0 z-10">
+        <Image
+          src="/greeting_star.png"
+          alt="Greeting Star"
+          width={120}
+          height={120}
+          className="object-contain"
+        />
+      </div>
+
+      {/* Text in top-right area, slightly to the left */}
+      <div className="absolute top-9 right-20 z-10 text-right text-white">
+        <div className="text-sm font-medium leading-tight">你已经收集了</div>
+        <div className="text-sm font-medium leading-tight">5个故事～</div>
+      </div>
+
       <motion.div
         className="absolute left-0 right-0 bg-yellow-50 shadow-2xl"
         style={{
@@ -40,11 +69,11 @@ export default function NextPage() {
         }}
         initial={{
           bottom: "-100%",
-          height: "90%",
+          height: "85%",
         }}
         animate={{
           bottom: isAnimated ? "0%" : "-100%",
-          height: "90%",
+          height: "85%",
         }}
         transition={{
           type: "spring",
@@ -115,6 +144,27 @@ export default function NextPage() {
             <div className="h-px bg-yellow-200 w-full"></div>
           </div>
         </div>
+      </motion.div>
+
+      {/* Bottom button */}
+      <motion.div 
+        className="absolute bottom-8 left-0 right-0 flex justify-center z-20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ 
+          opacity: showButton ? 1 : 0, 
+          y: showButton ? 0 : 20 
+        }}
+        transition={{ 
+          duration: 0.6, 
+          ease: "easeOut" 
+        }}
+      >
+        <button
+          onClick={handleGoHome}
+          className="px-8 py-3 bg-yellow-400 text-gray-800 text-sm font-medium rounded-full shadow-lg hover:bg-yellow-500 transition-colors duration-200 active:scale-95 transform"
+        >
+          点亮我的街道地图
+        </button>
       </motion.div>
     </div>
   )
