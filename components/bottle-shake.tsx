@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import { MotionDetector } from "@/lib/motion-detector"
 import { Button } from "@/components/ui/button"
-import { triggerVibration, vibrationPatterns, getVibrationInfo } from "@/lib/haptics"
+import { getVibrationInfo } from "@/lib/haptics"
 import dynamic from "next/dynamic"
 
 // 动态导入调试面板，避免SSR问题
@@ -188,9 +188,6 @@ export default function BottleShake() {
   }, [setSpheres, setBallStates])
 
   const handleStarClick = (starId: number) => {
-    // 点击星星时的震动反馈
-    triggerVibration(vibrationPatterns.success)
-    
     setSelectedStar(starId)
     setShowTransition(true)
     setTimeout(() => {
