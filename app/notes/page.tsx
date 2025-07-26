@@ -1,12 +1,12 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import notesData from "@/components/notes-data"
 
-export default function NextPage() {
+function NotesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isAnimated, setIsAnimated] = useState(false)
@@ -206,5 +206,13 @@ export default function NextPage() {
         </button>
       </motion.div>
     </div>
+  )
+}
+
+export default function NextPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NotesContent />
+    </Suspense>
   )
 }

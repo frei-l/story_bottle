@@ -11,6 +11,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  pageExtensions: ['jsx', 'js', 'tsx', 'ts'],
 }
 
 const config = withPWA({
