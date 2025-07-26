@@ -2,6 +2,8 @@ import type React from "react"
 import "./globals.css"
 import { Caveat } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import PWAInstallPrompt from "@/components/pwa-install-prompt"
+import ServiceWorkerRegister from "./service-worker-register"
 
 // Load Caveat font
 const caveat = Caveat({
@@ -44,6 +46,8 @@ export default function RootLayout({
       <body className={`${caveat.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
+          <PWAInstallPrompt />
+          <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
     </html>
