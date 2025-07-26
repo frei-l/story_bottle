@@ -74,8 +74,8 @@ export const vibrationPatterns = {
     20       // 最后一次轻微震动
   ],
   
-  // 成功反馈
-  success: [20, 100, 20],
+  // 成功反馈（轻柔的双击震动）
+  success: [30, 80, 30],
   
   // 错误反馈
   error: [50, 100, 50, 100, 50],

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import { MotionDetector } from "@/lib/motion-detector"
 import { Button } from "@/components/ui/button"
-import { getVibrationInfo } from "@/lib/haptics"
+import { getVibrationInfo, triggerVibration, vibrationPatterns } from "@/lib/haptics"
 import dynamic from "next/dynamic"
 
 // 动态导入调试面板，避免SSR问题
@@ -29,9 +29,10 @@ export default function BottleShake() {
   } = useBallStore()
 
   const [selectedStar, setSelectedStar] = useState<number | null>(null)
+  const [clickedStar, setClickedStar] = useState<number | null>(null) // 记录被点击的星星
   const [showTransition, setShowTransition] = useState(false)
   const [needsPermission, setNeedsPermission] = useState(false)
-  const [motionEnabled, setMotionEnabled] = useState(false)
+  const [motionEnabled, setMotionEnabled] = useState(false)  
   const [motionSupported, setMotionSupported] = useState(false)
   const [clickEnabled, setClickEnabled] = useState(true) // 默认启用点击
   const [showDebug, setShowDebug] = useState(false)
@@ -54,14 +55,14 @@ export default function BottleShake() {
           activateBalls()
         }
       })
-      
+
       motionDetectorRef.current = detector
-      
+
       // 检查是否支持并需要权限
       if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
         console.log('[BottleShake] 设备支持运动检测')
         setMotionSupported(true)
-        
+
         // 检查是否是iOS 13+需要权限
         if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
           console.log('[BottleShake] iOS设备，需要请求权限')
@@ -80,9 +81,9 @@ export default function BottleShake() {
         setClickEnabled(true) // 只启用点击功能
       }
     }
-    
+
     initMotionDetection()
-    
+
     // 清理函数
     return () => {
       if (motionDetectorRef.current) {
@@ -118,9 +119,9 @@ export default function BottleShake() {
   const handleRequestPermission = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (!motionDetectorRef.current) return
-    
+
     const granted = await motionDetectorRef.current.requestPermission()
     if (granted) {
       console.log('[BottleShake] 权限已授予，启动运动检测')
@@ -188,11 +189,24 @@ export default function BottleShake() {
   }, [setSpheres, setBallStates])
 
   const handleStarClick = (starId: number) => {
-    setSelectedStar(starId)
-    setShowTransition(true)
+    // 防止重复点击
+    if (clickedStar !== null) return
+    
+    // 点击星星时的震动反馈
+    triggerVibration(vibrationPatterns.success)
+    
+    // 设置被点击的星星，触发发光和摇晃效果
+    setClickedStar(starId)
+    console.log(`[BottleShake] 星星${starId + 1}被点击，触发发光和摇晃效果`)
+    
+    // 延迟显示过渡动画，让发光效果先播放
     setTimeout(() => {
-      router.push('/next-page') // 跳转到下一页
-    }, 1500) // 动画持续1.5秒后跳转
+      setSelectedStar(starId)
+      setShowTransition(true)
+      setTimeout(() => {
+        router.push('/next-page') // 跳转到下一页
+      }, 1500) // 动画持续1.5秒后跳转
+    }, 800) // 发光和摇晃效果持续0.8秒
   }
 
   // 获取屏幕中央的球（使用固定定位）
@@ -236,30 +250,76 @@ export default function BottleShake() {
                   height: `${sphere.size}px`,
                 }}
                 initial={{ scale: 0 }}
-                animate={{ scale: 1.3 }}
-                transition={{
-                  duration: 0.5,
-                  delay: ballState.startDelay + 4, // 稍微延迟缩放效果
-                }}
-                className="cursor-pointer"
+                animate={
+                  clickedStar === sphere.id
+                    ? {
+                        scale: [1.3, 1.5, 1.3], // 轻微晃动效果
+                        rotate: [0, 5, -5, 0], // 轻微旋转
+                      }
+                    : { scale: 1.3 }
+                }
+                transition={
+                  clickedStar === sphere.id
+                    ? {
+                        scale: { duration: 0.8, ease: "easeInOut" },
+                        rotate: { duration: 0.8, ease: "easeInOut" },
+                      }
+                    : {
+                        duration: 0.5,
+                        delay: ballState.startDelay + 4, // 稍微延迟缩放效果
+                      }
+                }
+                className="cursor-pointer relative"
                 onClick={() => handleStarClick(sphere.id)}
               >
+                {/* 发光效果背景 */}
+                {clickedStar === sphere.id && (
+                  <motion.div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background: "radial-gradient(circle, rgba(244, 196, 48, 0.6) 0%, rgba(244, 196, 48, 0.3) 50%, transparent 70%)",
+                      filter: "blur(8px)",
+                    }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 2, opacity: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                )}
+                
                 <Image
                   src="/star-yellow.png"
                   alt="Yellow Star"
                   width={sphere.size}
                   height={sphere.size}
-                  className="object-contain"
+                  className={`object-contain relative z-10 ${
+                    clickedStar === sphere.id ? 'drop-shadow-[0_0_15px_rgba(244,196,48,0.8)]' : ''
+                  }`}
                 />
               </motion.div>
               <motion.p
-                className="ml-12 text-2xl text-neutral-700 font-light whitespace-nowrap"
+                className={`ml-12 text-2xl font-light whitespace-nowrap transition-colors duration-300 ${
+                  clickedStar === sphere.id 
+                    ? 'text-yellow-600 font-medium' 
+                    : 'text-neutral-700'
+                }`}
                 initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  duration: 0.8,
-                  delay: ballState.startDelay + 4.2,
-                }}
+                animate={
+                  clickedStar === sphere.id
+                    ? { opacity: 1, x: 0, scale: [1, 1.1, 1] }
+                    : { opacity: 1, x: 0 }
+                }
+                transition={
+                  clickedStar === sphere.id
+                    ? {
+                        opacity: { duration: 0.8, delay: ballState.startDelay + 4.2 },
+                        x: { duration: 0.8, delay: ballState.startDelay + 4.2 },
+                        scale: { duration: 0.8, ease: "easeInOut" },
+                      }
+                    : {
+                        duration: 0.8,
+                        delay: ballState.startDelay + 4.2,
+                      }
+                }
               >
                 {labels[sphere.id]}
               </motion.p>
@@ -463,7 +523,7 @@ export default function BottleShake() {
                 {getPromptText()}
               </p>
               {needsPermission && (
-                <Button 
+                <Button
                   onClick={handleRequestPermission}
                   variant="outline"
                   size="sm"
@@ -488,12 +548,12 @@ export default function BottleShake() {
         }
         {
           ballsActivated && (
-            <motion.p 
+            <motion.p
               className="text-neutral-700 font-light text-md font-caveat absolute bottom-20 left-1/2 -translate-x-1/2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ 
-                duration: 0.8, 
+              transition={{
+                duration: 0.8,
                 delay: 5.5 // 在星星完全显现后显示 (ballState.startDelay最大值1 + 4.2 + 一些缓冲)
               }}
             >
