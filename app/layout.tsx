@@ -4,6 +4,7 @@ import { Caveat } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import PWAInstallPrompt from "@/components/pwa-install-prompt"
 import ServiceWorkerRegister from "./service-worker-register"
+import { Toaster } from "@/components/ui/sonner"
 
 // Load Caveat font
 const caveat = Caveat({
@@ -45,6 +46,7 @@ export default function RootLayout({
       </head>
       <body className={`${caveat.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <Toaster />
           {children}
           <PWAInstallPrompt />
           <ServiceWorkerRegister />
