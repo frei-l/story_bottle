@@ -39,6 +39,12 @@ export default function BottleShake() {
   const motionDetectorRef = useRef<MotionDetector | null>(null)
   const router = useRouter()
 
+  // 组件初始化时重置状态，确保每次进入页面都是初始状态
+  useEffect(() => {
+    resetBalls()
+    console.log('[BottleShake] 组件初始化，重置动画状态')
+  }, [])
+
   // 初始化震动支持检测
   useEffect(() => {
     const vibrationInfo = getVibrationInfo()
