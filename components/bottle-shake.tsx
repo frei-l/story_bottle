@@ -4,7 +4,15 @@ import { useBallStore, type BallState, type Sphere } from "@/lib/ball-store"
 import { AnimatePresence, motion } from "framer-motion"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+import { MotionDetector } from "@/lib/motion-detector"
+import { Button } from "@/components/ui/button"
+import dynamic from "next/dynamic"
+
+// 动态导入调试面板，避免SSR问题
+const MotionDebugPanel = dynamic(() => import("./motion-debug-panel"), {
+  ssr: false
+})
 
 
 export default function BottleShake() {
@@ -21,7 +29,67 @@ export default function BottleShake() {
 
   const [selectedStar, setSelectedStar] = useState<number | null>(null)
   const [showTransition, setShowTransition] = useState(false)
+  const [needsPermission, setNeedsPermission] = useState(false)
+  const [motionEnabled, setMotionEnabled] = useState(false)
+  const [showDebug, setShowDebug] = useState(false)
+  const motionDetectorRef = useRef<MotionDetector | null>(null)
   const router = useRouter()
+
+  // 初始化运动检测
+  useEffect(() => {
+    const initMotionDetection = async () => {
+      // 创建运动检测器实例
+      const detector = new MotionDetector(() => {
+        console.log('[BottleShake] 检测到晃动，触发瓶子动画')
+        if (!ballsActivated) {
+          activateBalls()
+        }
+      })
+      
+      motionDetectorRef.current = detector
+      
+      // 检查是否支持并需要权限
+      if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
+        // 检查是否是iOS 13+需要权限
+        if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+          console.log('[BottleShake] iOS设备，需要请求权限')
+          setNeedsPermission(true)
+        } else {
+          // 不需要权限，直接启动
+          console.log('[BottleShake] 无需权限，直接启动运动检测')
+          detector.start()
+          setMotionEnabled(true)
+        }
+      } else {
+        console.log('[BottleShake] 设备不支持运动检测')
+      }
+    }
+    
+    initMotionDetection()
+    
+    // 清理函数
+    return () => {
+      if (motionDetectorRef.current) {
+        motionDetectorRef.current.stop()
+      }
+    }
+  }, [ballsActivated, activateBalls])
+
+  // 处理权限请求
+  const handleRequestPermission = async () => {
+    if (!motionDetectorRef.current) return
+    
+    const granted = await motionDetectorRef.current.requestPermission()
+    if (granted) {
+      console.log('[BottleShake] 权限已授予，启动运动检测')
+      motionDetectorRef.current.start()
+      setMotionEnabled(true)
+      setNeedsPermission(false)
+    } else {
+      console.log('[BottleShake] 权限被拒绝')
+      alert('需要运动传感器权限才能使用摇一摇功能')
+    }
+  }
 
   useEffect(() => {
     // Generate random spheres
@@ -199,6 +267,9 @@ export default function BottleShake() {
       {/* 屏幕中央的球（固定定位） */}
       {getCenterBalls()}
 
+      {/* 调试面板 */}
+      {showDebug && <MotionDebugPanel onClose={() => setShowDebug(false)} />}
+
       <div className="relative flex flex-col items-center justify-center h-full w-full px-6">
         <motion.div
           className="relative mb-12 cursor-pointer"
@@ -343,7 +414,32 @@ export default function BottleShake() {
         </motion.div>
         {
           !ballsActivated && (
-            <p className="text-neutral-700 font-light text-md font-caveat absolute bottom-20 left-1/2 -translate-x-1/2">摇一摇唤醒故事</p>
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 text-center">
+              <p className="text-neutral-700 font-light text-md font-caveat">
+                {motionEnabled ? '摇一摇手机或点击瓶子唤醒故事' : '摇一摇唤醒故事'}
+              </p>
+              {needsPermission && (
+                <Button 
+                  onClick={handleRequestPermission}
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                >
+                  启用摇一摇功能
+                </Button>
+              )}
+              {/* 调试按钮 - 仅在开发环境显示 */}
+              {process.env.NODE_ENV === 'development' && (
+                <Button
+                  onClick={() => setShowDebug(!showDebug)}
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2 text-xs opacity-50 hover:opacity-100"
+                >
+                  {showDebug ? '隐藏调试' : '显示调试'}
+                </Button>
+              )}
+            </div>
           )
         }
         {
