@@ -56,9 +56,9 @@ export default function MapComponent({ markerType, locations, userLocation }: Ma
         ['linear'],
         ['get', 'point_count'],
         1, 0.3,
-        3, 0.6,
-        7, 0.9,
-        12, 1.0
+        2, 0.6,
+        5, 0.9,
+        8, 1.0
       ]
     } : {}
   }), [markerType]);
@@ -168,6 +168,15 @@ export default function MapComponent({ markerType, locations, userLocation }: Ma
         onLoad={handleMapLoad}
         interactiveLayerIds={['clusters', 'unclustered-point']}
       >
+        {userLocationData && (
+          <Source
+            id="user-location"
+            type="geojson"
+            data={userLocationData}
+          >
+            <Layer {...userLocationLayer} />
+          </Source>
+        )}
         <Source
           id="markers"
           type="geojson"
@@ -180,15 +189,6 @@ export default function MapComponent({ markerType, locations, userLocation }: Ma
           {markerType === 'bubble' && <Layer {...clusterCountLayer} />}
           <Layer {...unclusteredPointLayer} />
         </Source>
-        {userLocationData && (
-          <Source
-            id="user-location"
-            type="geojson"
-            data={userLocationData}
-          >
-            <Layer {...userLocationLayer} />
-          </Source>
-        )}
       </Map>
     </div>
   );
