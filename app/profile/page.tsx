@@ -38,17 +38,17 @@ export default function ProfilePage() {
                     <div className="relative mb-6">
                         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-100 to-blue-200 flex items-center justify-center">
                             <Image
-                                src="/star-yellow.png"
+                                src="/star-yellow-eyes.png"
                                 alt="User Avatar"
                                 width={60}
                                 height={60}
-                                className="object-contain"
+                                className="object-contain transform scale-[1.5] "
                             />
                         </div>
                     </div>
-                    
+
                     {/* 姓名 */}
-                    <h1 className="text-xl font-medium text-gray-800">姓名</h1>
+                    <h1 className="text-xl font-medium text-gray-800">小水</h1>
                 </div>
 
                 {/* 菜单项列表 */}
@@ -74,8 +74,8 @@ export default function ProfilePage() {
 
                 {/* 底部退出按钮 */}
                 <div className="absolute bottom-24 left-6 right-6">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         className="w-full py-3 text-gray-600 border-gray-200 hover:bg-gray-50 rounded-xl"
                     >
                         退出账号

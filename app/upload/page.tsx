@@ -21,7 +21,7 @@ export default function UploadPage() {
                         <p className="text-gray-600 text-xs">写下你的记忆，让更多人看到你的生活</p>
                     </div>
                     <Image
-                        src="/star_yellow_eyes.png"
+                        src="/star-yellow-eyes.png"
                         alt="Star"
                         width={48}
                         height={48}

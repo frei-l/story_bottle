@@ -40,7 +40,7 @@ export default function Home() {
           <div className="flex items-center justify-center gap-12 mt-12">
             <span className="text-gray-600 text-sm">你所在的街区有X条故事~</span>
             <Image
-              src="/star_yellow_eyes.png"
+              src="/star-yellow-eyes.png"
               alt="星星"
               width={40}
               height={40}
