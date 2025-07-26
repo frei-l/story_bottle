@@ -3,15 +3,21 @@
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import notesData from "@/components/notes-data"
 
 export default function NextPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isAnimated, setIsAnimated] = useState(false)
   const [showButton, setShowButton] = useState(false)
   const [likeActive, setLikeActive] = useState(false)
   const [saveActive, setSaveActive] = useState(false)
   const [dislikeActive, setDislikeActive] = useState(false)
+  
+  // 获取URL中的index参数
+  const noteIndex = searchParams.get('index') ? parseInt(searchParams.get('index')!) : 0
+  const note = notesData[noteIndex] || notesData[0] // 默认显示第一个笔记
 
   useEffect(() => {
     setTimeout(() => {
@@ -88,8 +94,9 @@ export default function NextPage() {
           <div className="flex justify-between items-start pt-2 px-4">
             {/* Content in left side */}
             <div>
-              <div className="text-gray-800 text-base leading-relaxed mb-1"> 2025/07/25 周五</div>
-              <div className="text-gray-700 text-xs mb-4">翻斗大街翻斗花园xxx</div>
+              <div className="text-gray-800 text-base leading-relaxed mb-1">{note.date} {note.weekday}</div>
+              <div className="text-gray-700 text-xs mb-1">{note.author}</div>
+              <div className="text-gray-700 text-xs mb-4">{note.location}</div>
             </div>
 
             {/* Action icons in right side */}
@@ -135,13 +142,11 @@ export default function NextPage() {
             </div>
           </div>
 
-          {/* Additional paper lines for visual effect */}
-          <div className="mt-8 space-y-8">
-            <div className="h-px bg-yellow-200 w-full"></div>
-            <div className="h-px bg-yellow-200 w-full"></div>
-            <div className="h-px bg-yellow-200 w-full"></div>
-            <div className="h-px bg-yellow-200 w-full"></div>
-            <div className="h-px bg-yellow-200 w-full"></div>
+          {/* Note content */}
+          <div className="px-4 mt-6">
+            <div className="text-gray-800 text-md leading-relaxed whitespace-pre-wrap">
+              {note.content}
+            </div>
           </div>
         </div>
       </motion.div>

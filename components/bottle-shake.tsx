@@ -8,6 +8,7 @@ import { useEffect, useState, useRef } from "react"
 import { MotionDetector } from "@/lib/motion-detector"
 import { Button } from "@/components/ui/button"
 import { getVibrationInfo, triggerVibration, vibrationPatterns } from "@/lib/haptics"
+import { getRandomNotes, type RandomNote } from "@/utils/random-notes"
 
 
 
@@ -27,15 +28,19 @@ export default function BottleShake() {
   const [clickedStar, setClickedStar] = useState<number | null>(null) // 记录被点击的星星
   const [showTransition, setShowTransition] = useState(false)
   const [needsPermission, setNeedsPermission] = useState(false)
-  const [motionEnabled, setMotionEnabled] = useState(false)  
+  const [motionEnabled, setMotionEnabled] = useState(false)
   const [motionSupported, setMotionSupported] = useState(false)
   const [clickEnabled, setClickEnabled] = useState(true) // 默认启用点击
+  const [randomNotes, setRandomNotes] = useState<RandomNote[]>([])
   const motionDetectorRef = useRef<MotionDetector | null>(null)
   const router = useRouter()
 
   // 组件初始化时重置状态，确保每次进入页面都是初始状态
   useEffect(() => {
     resetBalls()
+    // 生成随机笔记
+    const notes = getRandomNotes(3)
+    setRandomNotes(notes)
   }, [])
 
   // 初始化震动支持检测
@@ -107,7 +112,7 @@ export default function BottleShake() {
     if (process.env.NODE_ENV === 'development') {
       return '【开发模式】点击瓶子唤醒故事'
     }
-    
+
     if (needsPermission) {
       return '需要获取运动传感器权限以启用摇一摇功能'
     } else if (motionEnabled) {
@@ -195,19 +200,21 @@ export default function BottleShake() {
   const handleStarClick = (starId: number) => {
     // 防止重复点击
     if (clickedStar !== null) return
-    
+
     // 点击星星时的震动反馈
     triggerVibration(vibrationPatterns.success)
-    
+
     // 设置被点击的星星，触发发光和摇晃效果
     setClickedStar(starId)
-    
+
     // 延迟显示过渡动画，让发光效果先播放
     setTimeout(() => {
       setSelectedStar(starId)
       setShowTransition(true)
       setTimeout(() => {
-        router.push('/notes') // 跳转到下一页
+        // 获取对应的笔记索引并跳转
+        const noteIndex = randomNotes[starId]?.index
+        router.push(`/notes?index=${noteIndex}`) // 跳转到下一页并传递索引
       }, 1500) // 动画持续1.5秒后跳转
     }, 800) // 发光和摇晃效果持续0.8秒
   }
@@ -221,7 +228,8 @@ export default function BottleShake() {
         if (ballState?.stage === 'activated') {
           const centerY = (sphere.id) * 150 - 240 // -150, 0, 150 垂直间距
           const leftOffset = -100 // 偏左的位置
-          const labels = ["星星1", "星星2", "星星3"]
+          const labels = randomNotes.map(note => note.emotion)
+          const contents = randomNotes.map(note => note.content)
 
           return (
             <motion.div
@@ -256,21 +264,21 @@ export default function BottleShake() {
                 animate={
                   clickedStar === sphere.id
                     ? {
-                        scale: [1.3, 1.5, 1.3], // 轻微晃动效果
-                        rotate: [0, 5, -5, 0], // 轻微旋转
-                      }
+                      scale: [1.3, 1.5, 1.3], // 轻微晃动效果
+                      rotate: [0, 5, -5, 0], // 轻微旋转
+                    }
                     : { scale: 1.3 }
                 }
                 transition={
                   clickedStar === sphere.id
                     ? {
-                        scale: { duration: 0.8, ease: "easeInOut" },
-                        rotate: { duration: 0.8, ease: "easeInOut" },
-                      }
+                      scale: { duration: 0.8, ease: "easeInOut" },
+                      rotate: { duration: 0.8, ease: "easeInOut" },
+                    }
                     : {
-                        duration: 0.5,
-                        delay: ballState.startDelay + 4, // 稍微延迟缩放效果
-                      }
+                      duration: 0.5,
+                      delay: ballState.startDelay + 4, // 稍微延迟缩放效果
+                    }
                 }
                 className="cursor-pointer relative"
                 onClick={() => handleStarClick(sphere.id)}
@@ -288,23 +296,21 @@ export default function BottleShake() {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                   />
                 )}
-                
+
                 <Image
                   src="/star-yellow.png"
                   alt="Yellow Star"
                   width={sphere.size}
                   height={sphere.size}
-                  className={`object-contain relative z-10 ${
-                    clickedStar === sphere.id ? 'drop-shadow-[0_0_15px_rgba(244,196,48,0.8)]' : ''
-                  }`}
+                  className={`object-contain relative z-10 ${clickedStar === sphere.id ? 'drop-shadow-[0_0_15px_rgba(244,196,48,0.8)]' : ''
+                    }`}
                 />
               </motion.div>
-              <motion.p
-                className={`ml-12 text-2xl font-light whitespace-nowrap transition-colors duration-300 ${
-                  clickedStar === sphere.id 
-                    ? 'text-yellow-600 font-medium' 
-                    : 'text-neutral-700'
-                }`}
+              <motion.div
+                className={`ml-12 text-2xl font-light whitespace-nowrap transition-colors duration-300 ${clickedStar === sphere.id
+                  ? 'text-yellow-600 font-medium'
+                  : 'text-neutral-700'
+                  }`}
                 initial={{ opacity: 0, x: -20 }}
                 animate={
                   clickedStar === sphere.id
@@ -314,18 +320,21 @@ export default function BottleShake() {
                 transition={
                   clickedStar === sphere.id
                     ? {
-                        opacity: { duration: 0.8, delay: ballState.startDelay + 4.2 },
-                        x: { duration: 0.8, delay: ballState.startDelay + 4.2 },
-                        scale: { duration: 0.8, ease: "easeInOut" },
-                      }
+                      opacity: { duration: 0.8, delay: ballState.startDelay + 4.2 },
+                      x: { duration: 0.8, delay: ballState.startDelay + 4.2 },
+                      scale: { duration: 0.8, ease: "easeInOut" },
+                    }
                     : {
-                        duration: 0.8,
-                        delay: ballState.startDelay + 4.2,
-                      }
+                      duration: 0.8,
+                      delay: ballState.startDelay + 4.2,
+                    }
                 }
               >
-                {labels[sphere.id]}
-              </motion.p>
+                <div className="flex flex-col w-40">
+                  <p className="text-2xl font-medium">#{labels[sphere.id]}</p>
+                  <p className="text-base font-light text-neutral-600 max-w-[120px] whitespace-pre-wrap break-words -mt-6">{contents[sphere.id]}</p>
+                </div>
+              </motion.div>
             </motion.div>
           )
         }

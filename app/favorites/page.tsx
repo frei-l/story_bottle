@@ -4,19 +4,10 @@ import { Heart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import BasicMap from "@/components/map";
-
+import { defaultLocations, currentLocation } from "@/components/default-locations";
 
 export default function FavoritesPage() {
   const router = useRouter();
-  const defaultLocations = [
-    { lng: 120.011618, lat: 30.295699 }, // 东约800米
-    { lng: 119.995618, lat: 30.295699 }, // 西约800米
-    { lng: 120.003618, lat: 30.304699 }, // 北约1公里
-    { lng: 120.003618, lat: 30.286699 }, // 南约1公里
-    { lng: 120.008618, lat: 30.300699 }, // 东北约700米
-    { lng: 119.998618, lat: 30.290699 }, // 西南约700米
-  ];
-  const currentLocation = { lng: 120.003618, lat: 30.295699 };
   
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
