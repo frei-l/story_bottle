@@ -32,6 +32,8 @@ export default function BottleShake() {
   const [showTransition, setShowTransition] = useState(false)
   const [needsPermission, setNeedsPermission] = useState(false)
   const [motionEnabled, setMotionEnabled] = useState(false)
+  const [motionSupported, setMotionSupported] = useState(false)
+  const [clickEnabled, setClickEnabled] = useState(true) // 默认启用点击
   const [showDebug, setShowDebug] = useState(false)
   const motionDetectorRef = useRef<MotionDetector | null>(null)
   const router = useRouter()
@@ -57,18 +59,25 @@ export default function BottleShake() {
       
       // 检查是否支持并需要权限
       if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
+        console.log('[BottleShake] 设备支持运动检测')
+        setMotionSupported(true)
+        
         // 检查是否是iOS 13+需要权限
         if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
           console.log('[BottleShake] iOS设备，需要请求权限')
           setNeedsPermission(true)
+          setClickEnabled(false) // 禁用点击，等待权限授予
         } else {
           // 不需要权限，直接启动
           console.log('[BottleShake] 无需权限，直接启动运动检测')
           detector.start()
           setMotionEnabled(true)
+          setClickEnabled(false) // 禁用点击功能
         }
       } else {
-        console.log('[BottleShake] 设备不支持运动检测')
+        console.log('[BottleShake] 设备不支持运动检测，启用点击功能')
+        setMotionSupported(false)
+        setClickEnabled(true) // 只启用点击功能
       }
     }
     
@@ -81,6 +90,29 @@ export default function BottleShake() {
       }
     }
   }, [ballsActivated, activateBalls])
+
+  // 处理瓶子点击事件
+  const handleBottleClick = () => {
+    if (clickEnabled && !ballsActivated) {
+      console.log('[BottleShake] 点击瓶子，触发动画')
+      activateBalls()
+    }
+  }
+
+  // 获取提示文字
+  const getPromptText = () => {
+    if (needsPermission) {
+      return '需要获取运动传感器权限以启用摇一摇功能'
+    } else if (motionEnabled) {
+      return '摇一摇手机唤醒故事'
+    } else if (clickEnabled) {
+      return '点击瓶子唤醒故事'
+    } else if (motionSupported) {
+      return '摇一摇唤醒故事'
+    } else {
+      return '点击瓶子唤醒故事'
+    }
+  }
 
   // 处理权限请求
   const handleRequestPermission = async (e: React.MouseEvent) => {
@@ -95,9 +127,12 @@ export default function BottleShake() {
       motionDetectorRef.current.start()
       setMotionEnabled(true)
       setNeedsPermission(false)
+      setClickEnabled(false) // 禁用点击功能
     } else {
-      console.log('[BottleShake] 权限被拒绝')
-      alert('需要运动传感器权限才能使用摇一摇功能')
+      console.log('[BottleShake] 权限被拒绝，启用点击功能作为备选')
+      setNeedsPermission(false)
+      setClickEnabled(true) // 启用点击功能作为备选
+      alert('未获得运动传感器权限，将使用点击模式')
     }
   }
 
@@ -284,8 +319,8 @@ export default function BottleShake() {
 
       <div className="relative flex flex-col items-center justify-center h-full w-full px-6">
         <motion.div
-          className="relative mb-12 cursor-pointer"
-          onClick={() => activateBalls()}
+          className={`relative mb-12 ${clickEnabled ? 'cursor-pointer' : 'cursor-default'}`}
+          onClick={handleBottleClick}
           animate={ballsActivated ? { opacity: 0 } : { opacity: 1 }}
           transition={ballsActivated ? { duration: 1.5, delay: 3 } : { duration: 0.5 }}
         >
@@ -428,7 +463,7 @@ export default function BottleShake() {
           !ballsActivated && (
             <div className="absolute bottom-20 left-1/2 -translate-x-1/2 text-center">
               <p className="text-neutral-700 font-light text-md font-caveat">
-                {motionEnabled ? '摇一摇手机或点击瓶子唤醒故事' : '摇一摇唤醒故事'}
+                {getPromptText()}
               </p>
               {needsPermission && (
                 <Button 
