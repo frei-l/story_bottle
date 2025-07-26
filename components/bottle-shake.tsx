@@ -225,7 +225,7 @@ export default function BottleShake() {
       setSelectedStar(starId)
       setShowTransition(true)
       setTimeout(() => {
-        router.push('/next-page') // 跳转到下一页
+        router.push('/notes') // 跳转到下一页
       }, 1500) // 动画持续1.5秒后跳转
     }, 800) // 发光和摇晃效果持续0.8秒
   }
