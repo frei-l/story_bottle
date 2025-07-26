@@ -7,13 +7,8 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import { MotionDetector } from "@/lib/motion-detector"
 import { Button } from "@/components/ui/button"
-import { getVibrationInfo, triggerVibration, vibrationPatterns, resetVibrationCooldown } from "@/lib/haptics"
-import dynamic from "next/dynamic"
+import { getVibrationInfo, triggerVibration, vibrationPatterns } from "@/lib/haptics"
 
-// 动态导入调试面板，避免SSR问题
-const MotionDebugPanel = dynamic(() => import("./motion-debug-panel"), {
-  ssr: false
-})
 
 
 export default function BottleShake() {
@@ -35,20 +30,17 @@ export default function BottleShake() {
   const [motionEnabled, setMotionEnabled] = useState(false)  
   const [motionSupported, setMotionSupported] = useState(false)
   const [clickEnabled, setClickEnabled] = useState(true) // 默认启用点击
-  const [showDebug, setShowDebug] = useState(false)
   const motionDetectorRef = useRef<MotionDetector | null>(null)
   const router = useRouter()
 
   // 组件初始化时重置状态，确保每次进入页面都是初始状态
   useEffect(() => {
     resetBalls()
-    console.log('[BottleShake] 组件初始化，重置动画状态')
   }, [])
 
   // 初始化震动支持检测
   useEffect(() => {
-    const vibrationInfo = getVibrationInfo()
-    console.log('[BottleShake] 震动支持情况:', vibrationInfo)
+    getVibrationInfo()
   }, [])
 
   // 初始化运动检测
@@ -56,7 +48,6 @@ export default function BottleShake() {
     const initMotionDetection = async () => {
       // 在开发环境下强制启用点击功能
       if (process.env.NODE_ENV === 'development') {
-        console.log('[BottleShake] 开发环境：强制启用点击功能')
         setMotionSupported(false)
         setMotionEnabled(false)
         setClickEnabled(true)
@@ -66,7 +57,6 @@ export default function BottleShake() {
 
       // 创建运动检测器实例
       const detector = new MotionDetector(() => {
-        console.log('[BottleShake] 检测到晃动，触发瓶子动画')
         if (!ballsActivated) {
           activateBalls()
         }
@@ -76,23 +66,19 @@ export default function BottleShake() {
 
       // 检查是否支持并需要权限
       if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
-        console.log('[BottleShake] 设备支持运动检测')
         setMotionSupported(true)
 
         // 检查是否是iOS 13+需要权限
         if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-          console.log('[BottleShake] iOS设备，需要请求权限')
           setNeedsPermission(true)
           setClickEnabled(false) // 禁用点击，等待权限授予
         } else {
           // 不需要权限，直接启动
-          console.log('[BottleShake] 无需权限，直接启动运动检测')
           detector.start()
           setMotionEnabled(true)
           setClickEnabled(false) // 禁用点击功能
         }
       } else {
-        console.log('[BottleShake] 设备不支持运动检测，启用点击功能')
         setMotionSupported(false)
         setClickEnabled(true) // 只启用点击功能
       }
@@ -111,7 +97,6 @@ export default function BottleShake() {
   // 处理瓶子点击事件
   const handleBottleClick = () => {
     if (clickEnabled && !ballsActivated) {
-      console.log('[BottleShake] 点击瓶子，触发动画')
       activateBalls()
     }
   }
@@ -145,13 +130,11 @@ export default function BottleShake() {
 
     const granted = await motionDetectorRef.current.requestPermission()
     if (granted) {
-      console.log('[BottleShake] 权限已授予，启动运动检测')
       motionDetectorRef.current.start()
       setMotionEnabled(true)
       setNeedsPermission(false)
       setClickEnabled(false) // 禁用点击功能
     } else {
-      console.log('[BottleShake] 权限被拒绝，启用点击功能作为备选')
       setNeedsPermission(false)
       setClickEnabled(true) // 启用点击功能作为备选
       alert('未获得运动传感器权限，将使用点击模式')
@@ -218,7 +201,6 @@ export default function BottleShake() {
     
     // 设置被点击的星星，触发发光和摇晃效果
     setClickedStar(starId)
-    console.log(`[BottleShake] 星星${starId + 1}被点击，触发发光和摇晃效果`)
     
     // 延迟显示过渡动画，让发光效果先播放
     setTimeout(() => {
@@ -392,8 +374,6 @@ export default function BottleShake() {
       {/* 屏幕中央的球（固定定位） */}
       {getCenterBalls()}
 
-      {/* 调试面板 */}
-      {showDebug && <MotionDebugPanel onClose={() => setShowDebug(false)} />}
 
       <div className="relative flex flex-col items-center justify-center h-full w-full px-6">
         <motion.div
@@ -552,56 +532,6 @@ export default function BottleShake() {
                 >
                   启用摇一摇功能
                 </Button>
-              )}
-              {/* 调试按钮 - 仅在开发环境显示 */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="flex flex-col gap-2 mt-2">
-                  <Button
-                    onClick={() => setShowDebug(!showDebug)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs opacity-50 hover:opacity-100"
-                  >
-                    {showDebug ? '隐藏调试' : '显示调试'}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      console.log('[Debug] 手动触发震动测试')
-                      const vibInfo = getVibrationInfo()
-                      console.log('[Debug] 当前震动状态:', vibInfo)
-                      triggerVibration(vibrationPatterns.shake)
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs opacity-50 hover:opacity-100"
-                  >
-                    测试震动
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      console.log('[Debug] 重置震动冷却时间')
-                      resetVibrationCooldown()
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs opacity-50 hover:opacity-100"
-                  >
-                    重置冷却
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      console.log('[Debug] 手动触发瓶子摇晃动画')
-                      if (!ballsActivated) {
-                        activateBalls()
-                      }
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs opacity-50 hover:opacity-100"
-                  >
-                    测试摇晃
-                  </Button>
-                </div>
               )}
             </div>
           )
