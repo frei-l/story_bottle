@@ -1,13 +1,11 @@
 "use client"
 
-import Navigation from "@/components/navigation"
+import { useEffect } from 'react'
+import { redirect } from 'next/navigation'
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between">
-      <div className="relative w-full max-w-md h-[100dvh] overflow-hidden">
-        <Navigation />
-      </div>
-    </main>
-  )
+  useEffect(() => {
+    redirect('/map')
+  }, [])
+  return null
 }
