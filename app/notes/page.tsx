@@ -51,7 +51,24 @@ export default function NextPage() {
       background: 'radial-gradient(circle at center, #E6B800 0%, #F4C430 30%, #F2D98D 70%, #F5E6D3 100%)'
     }}>
       {/* Greeting star in top-right corner */}
-      <div className="absolute top-0 right-0 z-10">
+      <motion.div 
+        className="absolute top-0 right-0 z-10"
+        initial={{ 
+          opacity: 0, 
+          x: 30, 
+          y: -30 
+        }}
+        animate={{ 
+          opacity: 1, 
+          x: 0, 
+          y: 0 
+        }}
+        transition={{ 
+          duration: 0.8, 
+          delay: 0.3,
+          ease: "easeOut" 
+        }}
+      >
         <Image
           src="/greeting_star.png"
           alt="Greeting Star"
@@ -59,13 +76,30 @@ export default function NextPage() {
           height={120}
           className="object-contain"
         />
-      </div>
+      </motion.div>
 
       {/* Text in top-right area, slightly to the left */}
-      <div className="absolute top-9 right-20 z-10 text-right text-white">
+      <motion.div 
+        className="absolute top-9 right-20 z-10 text-right text-white"
+        initial={{ 
+          opacity: 0, 
+          x: 20, 
+          y: -20 
+        }}
+        animate={{ 
+          opacity: 1, 
+          x: 0, 
+          y: 0 
+        }}
+        transition={{ 
+          duration: 0.8, 
+          delay: 0.5,
+          ease: "easeOut" 
+        }}
+      >
         <div className="text-sm font-medium leading-tight">你已经收集了</div>
         <div className="text-sm font-medium leading-tight">5个故事～</div>
-      </div>
+      </motion.div>
 
       <motion.div
         className="absolute left-0 right-0 bg-yellow-50 shadow-2xl"
