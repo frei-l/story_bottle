@@ -63,6 +63,7 @@ export default function BottleShake() {
       // 创建运动检测器实例
       const detector = new MotionDetector(() => {
         if (!ballsActivated) {
+          playBottleShakeSound() // 播放晃动音效
           activateBalls()
         }
       })
@@ -102,8 +103,17 @@ export default function BottleShake() {
   // 处理瓶子点击事件
   const handleBottleClick = () => {
     if (clickEnabled && !ballsActivated) {
+      playBottleShakeSound() // 播放晃动音效
       activateBalls()
     }
+  }
+
+  // 播放瓶子晃动音效
+  const playBottleShakeSound = () => {
+    const audio = new Audio('/bottle-shake.mp3')
+    audio.play().catch(error => {
+      console.log('Failed to play bottle shake sound:', error)
+    })
   }
 
   // 获取提示文字
@@ -200,6 +210,12 @@ export default function BottleShake() {
   const handleStarClick = (starId: number) => {
     // 防止重复点击
     if (clickedStar !== null) return
+
+    // 播放点击星星音效
+    const audio = new Audio('/click-star.mp3')
+    audio.play().catch(error => {
+      console.log('Failed to play star click sound:', error)
+    })
 
     // 点击星星时的震动反馈
     triggerVibration(vibrationPatterns.success)
