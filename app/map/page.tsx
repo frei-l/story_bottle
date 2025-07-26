@@ -14,8 +14,8 @@ export default function Home() {
       <div className="relative w-full max-w-md h-[100dvh] overflow-hidden flex flex-col">
         {/* 顶部标题栏 */}
         <div className="flex-shrink-0 bg-white/90 backdrop-blur-sm z-30">
-          <div className="flex items-center justify-between px-4 py-3">
-            <h1 className="text-lg font-medium text-gray-900">附近故事</h1>
+          <div className="flex items-center justify-between px-4 pt-6">
+            <h1 className="text-lg text-gray-900">附近故事</h1>
             <button onClick={() => router.push('/upload')} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
               <Upload size={20} className="text-gray-600" />
             </button>
@@ -32,13 +32,16 @@ export default function Home() {
         {/* 底部内容区域 */}
         <div className="flex-shrink-0 px-4 pb-4 space-y-12 pt-2">
           {/* 探索故事按钮 */}
-          <button onClick={() => router.push('/bottle')} className="w-full bg-yellow-400 hover:bg-yellow-500 transition-colors rounded-full py-4 font-medium text-gray-900 text-lg shadow-lg">
+          <button onClick={() => router.push('/bottle')} className="w-full bg-yellow-400 hover:bg-yellow-500 transition-colors rounded-full py-4  text-gray-900 text-lg shadow-lg">
             探索故事
           </button>
 
           {/* 底部文字和星星 */}
           <div className="flex items-center justify-center gap-12 mt-12">
-            <span className="text-gray-600 text-sm">你所在的街区有X条故事~</span>
+            <div className="text-gray-600 text-sm text-center pt-8">
+              你所在的街区有4条故事~<br/>
+              已解锁1个啦
+            </div>
             <Image
               src="/star-yellow-eyes.png"
               alt="星星"
