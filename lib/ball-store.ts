@@ -27,7 +27,7 @@ interface BallStore {
     // 动作
     setSpheres: (spheres: Sphere[]) => void
     setBallStates: (ballStates: BallState[]) => void
-    activateBalls: () => void
+    activateBalls: (withVibration?: boolean) => void
     updateBallStage: (ballId: number, stage: BallStage) => void
     updateBallStages: () => void
     resetBalls: () => void
@@ -47,7 +47,7 @@ export const useBallStore = create<BallStore>((set, get) => ({
     setBallStates: (ballStates) => set({ ballStates }),
 
     // 激活彩色小球
-    activateBalls: () => {
+    activateBalls: (withVibration = true) => {
         const { ballStates } = get()
         const updatedBallStates = ballStates.map(ball => ({
             ...ball,
@@ -59,6 +59,13 @@ export const useBallStore = create<BallStore>((set, get) => ({
             activationTime: Date.now(),
             ballStates: updatedBallStates
         })
+
+        // 触发震动反馈（如果支持且启用）
+        if (withVibration && typeof window !== 'undefined') {
+            import('../lib/haptics').then(({ triggerVibration, vibrationPatterns }) => {
+                triggerVibration(vibrationPatterns.shake)
+            })
+        }
     },
 
     // 更新单个球的状态

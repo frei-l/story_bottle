@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import { MotionDetector } from "@/lib/motion-detector"
 import { Button } from "@/components/ui/button"
+import { triggerVibration, vibrationPatterns, getVibrationInfo } from "@/lib/haptics"
 import dynamic from "next/dynamic"
 
 // 动态导入调试面板，避免SSR问题
@@ -34,6 +35,12 @@ export default function BottleShake() {
   const [showDebug, setShowDebug] = useState(false)
   const motionDetectorRef = useRef<MotionDetector | null>(null)
   const router = useRouter()
+
+  // 初始化震动支持检测
+  useEffect(() => {
+    const vibrationInfo = getVibrationInfo()
+    console.log('[BottleShake] 震动支持情况:', vibrationInfo)
+  }, [])
 
   // 初始化运动检测
   useEffect(() => {
@@ -121,7 +128,6 @@ export default function BottleShake() {
       } else {
         // Use a 4x3 grid layout for better distribution
         const gridCols = 3
-        const gridRows = 3
         const gridX = Math.floor((i - 3) / gridCols) // Create 4 columns
         const gridY = (i - 3) % gridCols // Create 3 rows
 
@@ -147,6 +153,9 @@ export default function BottleShake() {
   }, [setSpheres, setBallStates])
 
   const handleStarClick = (starId: number) => {
+    // 点击星星时的震动反馈
+    triggerVibration(vibrationPatterns.success)
+    
     setSelectedStar(starId)
     setShowTransition(true)
     setTimeout(() => {
@@ -276,7 +285,7 @@ export default function BottleShake() {
       <div className="relative flex flex-col items-center justify-center h-full w-full px-6">
         <motion.div
           className="relative mb-12 cursor-pointer"
-          onClick={activateBalls}
+          onClick={() => activateBalls()}
           animate={ballsActivated ? { opacity: 0 } : { opacity: 1 }}
           transition={ballsActivated ? { duration: 1.5, delay: 3 } : { duration: 0.5 }}
         >
