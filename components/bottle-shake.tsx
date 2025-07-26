@@ -76,7 +76,10 @@ export default function BottleShake() {
   }, [ballsActivated, activateBalls])
 
   // 处理权限请求
-  const handleRequestPermission = async () => {
+  const handleRequestPermission = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
     if (!motionDetectorRef.current) return
     
     const granted = await motionDetectorRef.current.requestPermission()
