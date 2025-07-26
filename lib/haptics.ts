@@ -1,5 +1,9 @@
 // 触觉反馈工具函数
 
+// 防重复触发的时间戳记录
+let lastVibrationTime = 0
+const VIBRATION_COOLDOWN = 200 // 200ms 冷却时间
+
 /**
  * 检查设备是否支持震动API
  */
@@ -12,32 +16,46 @@ export const isVibrationSupported = (): boolean => {
  * @param pattern - 震动模式，可以是单个数字或数组
  * @returns 是否成功触发震动
  */
-export const triggerVibration = (pattern: number | number[]): boolean => {
+export const triggerVibration = (pattern: number | number[], ignoreCooldown: boolean = false): boolean => {
+  const timestamp = new Date().toISOString()
+  const now = Date.now()
+  
+  // 检查冷却时间（除非明确忽略）
+  if (!ignoreCooldown && (now - lastVibrationTime) < VIBRATION_COOLDOWN) {
+    console.log(`[Haptics][${timestamp}] ⏳ 震动在冷却期内，跳过触发 (${now - lastVibrationTime}ms < ${VIBRATION_COOLDOWN}ms)`)
+    return false
+  }
+  
   // 检查是否在客户端环境
   if (typeof window === 'undefined') {
-    console.log('[Haptics] 服务端环境，无法触发震动')
+    console.log(`[Haptics][${timestamp}] 服务端环境，无法触发震动`)
     return false
   }
 
   // 检查是否支持震动API
   if (!isVibrationSupported()) {
-    console.log('[Haptics] 此设备不支持震动API')
+    console.log(`[Haptics][${timestamp}] 此设备不支持震动API - Navigator支持:`, 'navigator' in window, 'Vibrate支持:', 'vibrate' in (navigator || {}))
     return false
   }
 
   try {
+    console.log(`[Haptics][${timestamp}] 开始触发震动，模式:`, pattern)
+    
     // 调用震动API
     const result = navigator.vibrate(pattern)
     
+    // 更新最后触发时间
+    lastVibrationTime = now
+    
     if (result) {
-      console.log('[Haptics] 震动触发成功:', pattern)
+      console.log(`[Haptics][${timestamp}] ✅ 震动触发成功:`, pattern)
     } else {
-      console.log('[Haptics] 震动触发失败（可能是iOS设备）')
+      console.warn(`[Haptics][${timestamp}] ⚠️ 震动触发失败（可能是iOS设备或已被禁用）:`, pattern)
     }
     
     return result
   } catch (error) {
-    console.error('[Haptics] 触发震动时出错:', error)
+    console.error(`[Haptics][${timestamp}] ❌ 触发震动时出错:`, error, '模式:', pattern)
     return false
   }
 }
@@ -94,6 +112,8 @@ export const getVibrationInfo = () => {
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
     isIOS: typeof navigator !== 'undefined' && /iPhone|iPad|iPod/.test(navigator.userAgent),
     isAndroid: typeof navigator !== 'undefined' && /Android/.test(navigator.userAgent),
+    lastVibrationTime: lastVibrationTime,
+    cooldownRemaining: Math.max(0, VIBRATION_COOLDOWN - (Date.now() - lastVibrationTime)),
     note: ''
   }
   
@@ -106,4 +126,12 @@ export const getVibrationInfo = () => {
   }
   
   return info
+}
+
+/**
+ * 重置震动冷却时间 - 调试用
+ */
+export const resetVibrationCooldown = () => {
+  lastVibrationTime = 0
+  console.log('[Haptics] 震动冷却时间已重置')
 }

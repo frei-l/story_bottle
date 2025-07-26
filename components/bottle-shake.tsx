@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import { MotionDetector } from "@/lib/motion-detector"
 import { Button } from "@/components/ui/button"
-import { getVibrationInfo, triggerVibration, vibrationPatterns } from "@/lib/haptics"
+import { getVibrationInfo, triggerVibration, vibrationPatterns, resetVibrationCooldown } from "@/lib/haptics"
 import dynamic from "next/dynamic"
 
 // 动态导入调试面板，避免SSR问题
@@ -555,14 +555,53 @@ export default function BottleShake() {
               )}
               {/* 调试按钮 - 仅在开发环境显示 */}
               {process.env.NODE_ENV === 'development' && (
-                <Button
-                  onClick={() => setShowDebug(!showDebug)}
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2 text-xs opacity-50 hover:opacity-100"
-                >
-                  {showDebug ? '隐藏调试' : '显示调试'}
-                </Button>
+                <div className="flex flex-col gap-2 mt-2">
+                  <Button
+                    onClick={() => setShowDebug(!showDebug)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs opacity-50 hover:opacity-100"
+                  >
+                    {showDebug ? '隐藏调试' : '显示调试'}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      console.log('[Debug] 手动触发震动测试')
+                      const vibInfo = getVibrationInfo()
+                      console.log('[Debug] 当前震动状态:', vibInfo)
+                      triggerVibration(vibrationPatterns.shake)
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs opacity-50 hover:opacity-100"
+                  >
+                    测试震动
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      console.log('[Debug] 重置震动冷却时间')
+                      resetVibrationCooldown()
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs opacity-50 hover:opacity-100"
+                  >
+                    重置冷却
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      console.log('[Debug] 手动触发瓶子摇晃动画')
+                      if (!ballsActivated) {
+                        activateBalls()
+                      }
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs opacity-50 hover:opacity-100"
+                  >
+                    测试摇晃
+                  </Button>
+                </div>
               )}
             </div>
           )

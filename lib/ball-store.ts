@@ -62,19 +62,28 @@ export const useBallStore = create<BallStore>((set, get) => ({
 
         // 触发持续震动反馈（如果支持且启用）
         if (withVibration && typeof window !== 'undefined') {
-            import('../lib/haptics').then(({ triggerVibration }) => {
-                // 模拟瓶子摇晃的震动模式：1秒持续震动
-                // 对应瓶子动画的摇晃节奏，降低频率增强震感
-                const shakePattern = [
-                    80, 120,  // 第一次摇晃（更强）
-                    80, 120,  // 第二次摇晃
-                    80, 120,  // 第三次摇晃
-                    60, 100,  // 第四次摇晃（稍弱）
-                    60, 100,  // 第五次摇晃
-                    40        // 最后一次轻微震动
-                ]
-                triggerVibration(shakePattern)
-            })
+            // 使用 setTimeout 确保在下一个事件循环中触发，避免同步问题
+            setTimeout(() => {
+                import('../lib/haptics').then(({ triggerVibration }) => {
+                    // 模拟瓶子摇晃的震动模式：1秒持续震动
+                    // 对应瓶子动画的摇晃节奏，降低频率增强震感
+                    const shakePattern = [
+                        80, 120,  // 第一次摇晃（更强）
+                        80, 120,  // 第二次摇晃
+                        80, 120,  // 第三次摇晃
+                        60, 100,  // 第四次摇晃（稍弱）
+                        60, 100,  // 第五次摇晃
+                        40        // 最后一次轻微震动
+                    ]
+                    console.log('[BallStore] 尝试触发震动反馈，模式:', shakePattern)
+                    const result = triggerVibration(shakePattern, true) // 忽略冷却时间，确保瓶子摇晃时能正常触发
+                    console.log('[BallStore] 震动触发结果:', result)
+                }).catch(error => {
+                    console.error('[BallStore] 导入haptics模块失败:', error)
+                })
+            }, 0)
+        } else {
+            console.log('[BallStore] 震动被跳过 - withVibration:', withVibration, 'window存在:', typeof window !== 'undefined')
         }
     },
 
