@@ -29,15 +29,21 @@ export default function MapComponent({ markerType, locations, userLocation }: Ma
     }))
   }), [locations]);
 
-  // Calculate center point from locations
+  // Calculate center point - prioritize userLocation, fallback to locations average
   const center = useMemo(() => {
+    // If userLocation is available, use it as center
+    if (userLocation) {
+      return { longitude: userLocation.lng, latitude: userLocation.lat };
+    }
+    
+    // Fallback to average of all locations
     if (locations.length === 0) return { longitude: 0, latitude: 0 };
     
     const avgLat = locations.reduce((sum, loc) => sum + loc.lat, 0) / locations.length;
     const avgLng = locations.reduce((sum, loc) => sum + loc.lng, 0) / locations.length;
     
     return { longitude: avgLng, latitude: avgLat };
-  }, [locations]);
+  }, [locations, userLocation]);
 
   // Define cluster layer based on marker type
   const clusterLayer: LayerProps = useMemo(() => ({
