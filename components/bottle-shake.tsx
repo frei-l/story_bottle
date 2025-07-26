@@ -32,12 +32,14 @@ export default function BottleShake() {
   const [motionSupported, setMotionSupported] = useState(false)
   const [clickEnabled, setClickEnabled] = useState(true) // 默认启用点击
   const [randomNotes, setRandomNotes] = useState<RandomNote[]>([])
+  const [showStorySelection, setShowStorySelection] = useState(false) // 控制标题变化
   const motionDetectorRef = useRef<MotionDetector | null>(null)
   const router = useRouter()
 
   // 组件初始化时重置状态，确保每次进入页面都是初始状态
   useEffect(() => {
     resetBalls()
+    setShowStorySelection(false) // 重置标题状态
     // 生成随机笔记
     const notes = getRandomNotes(3)
     setRandomNotes(notes)
@@ -47,6 +49,18 @@ export default function BottleShake() {
   useEffect(() => {
     getVibrationInfo()
   }, [])
+
+  // 监听球激活状态，控制标题变化
+  useEffect(() => {
+    if (ballsActivated) {
+      // 在星星开始移动到中央位置时改变标题（延迟4秒，对应星星显现的时机）
+      const timer = setTimeout(() => {
+        setShowStorySelection(true)
+      }, 4000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [ballsActivated])
 
   // 初始化运动检测
   useEffect(() => {
@@ -361,6 +375,32 @@ export default function BottleShake() {
 
   return (
     <div className="relative flex flex-col items-center justify-center h-full w-full overflow-hidden">
+      {/* 动态标题 */}
+      <AnimatePresence mode="wait">
+        {showStorySelection ? (
+          <motion.p
+            key="story-selection"
+            className="text-gray-900 text-lg absolute top-7 left-4 z-20"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.5 }}
+          >
+            选择故事
+          </motion.p>
+        ) : (
+          <motion.p
+            key="bottle-title"
+            className="text-gray-900 text-lg absolute top-7 left-4 z-20"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.5 }}
+          >
+            街区罐子
+          </motion.p>
+        )}
+      </AnimatePresence>
       {/* Warm gradient background with film grain */}
       <div className="absolute inset-0 bg-white"></div>
 
