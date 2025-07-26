@@ -21,32 +21,48 @@ export default function FavoritesPage() {
           </div>
         </div>
 
-        {/* 地图容器 - 占据屏幕1/2 */}
-        <div className="h-1/2 flex items-center justify-center p-4">
-          <div className="w-full h-full rounded-lg overflow-hidden">
+        {/* 地图容器 - 占据屏幕3/5 */}
+        <div className="relative h-3/5 flex items-center justify-center py-4">
+          <div className="absolute -bottom-10 left-7 z-0">
+            <Image 
+              src="/blue-star.png" 
+              alt="装饰星星" 
+              width={80} 
+              height={80}
+              className="object-contain transform scale-[3] opacity-80"
+            />
+          </div>
+          
+          <div className="relative w-full h-full rounded-lg overflow-hidden z-10">
             <OpenStreetMap />
+            
+            {/* 统计信息 - 左下角 */}
+            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg z-10">
+              <div className="space-y-1">
+                <p className="text-gray-700 text-sm font-medium">你已经解锁了<span className="text-yellow-600 font-bold">3</span>个城市</p>
+                <p className="text-gray-700 text-sm font-medium">收藏了<span className="text-yellow-600 font-bold">5</span>个瓶子</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 底部内容区域 */}
         <div className="flex-shrink-0 px-4 pb-4 space-y-6 pt-2">
-          {/* 统计信息 */}
-          <div className="space-y-2">
-            <p className="text-gray-700 text-base font-medium">你已经解锁了<span className="text-yellow-600 font-bold">3</span>个城市</p>
-            <p className="text-gray-700 text-base font-medium">收藏了<span className="text-yellow-600 font-bold">5</span>个瓶子</p>
-          </div>
-
-          {/* 蓝色装饰和鼓励文字 */}
-          <div className="relative bg-gradient-to-r from-blue-100 to-cyan-100 rounded-lg p-4 mt-6">
-            {/* 蓝色装饰图案 */}
-            <div className="absolute -bottom-2 -left-2 w-16 h-16 bg-gradient-to-br from-cyan-300 to-blue-400 rounded-full opacity-60"></div>
-            <div className="absolute top-2 right-4 w-8 h-8 bg-gradient-to-br from-cyan-200 to-blue-300 rounded-full opacity-40"></div>
+          <div className="relative rounded-lg p-4 mt-6">
+            {/* 蓝色线条装饰 - 右下角 */}
+            <div className="absolute bottom-3 right-12 z-0">
+              <Image 
+                src="/blue-line.png" 
+                alt="装饰线条" 
+                width={60} 
+                height={40}
+                className="object-contain opacity-70"
+              />
+            </div>
             
             <div className="relative z-10">
               <p className="text-gray-700 text-sm leading-relaxed text-center">
                 你的探索会让区域地图逐渐上色，<br/>
                 出发探索城市更多角落吧！
-                <span className="inline-block ml-1 text-cyan-500 font-bold">🎯</span>
               </p>
             </div>
           </div>
