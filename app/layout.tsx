@@ -2,7 +2,6 @@ import type React from "react"
 import "./globals.css"
 import { Caveat } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
-import PWAInstallPrompt from "@/components/pwa-install-prompt"
 import ServiceWorkerRegister from "./service-worker-register"
 import { Toaster } from "@/components/ui/sonner"
 
@@ -48,7 +47,6 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <Toaster />
           {children}
-          <PWAInstallPrompt />
           <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
