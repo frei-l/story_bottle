@@ -12,9 +12,10 @@ interface Location {
 interface MapComponentProps {
   markerType: 'bubble' | 'star';
   locations: Location[];
+  userLocation?: Location;
 }
 
-export default function MapComponent({ markerType, locations }: MapComponentProps) {
+export default function MapComponent({ markerType, locations, userLocation }: MapComponentProps) {
   // Convert locations to GeoJSON format
   const geojsonData = useMemo(() => ({
     type: 'FeatureCollection' as const,
@@ -46,7 +47,7 @@ export default function MapComponent({ markerType, locations }: MapComponentProp
     filter: ['has', 'point_count'],
     layout: {
       'icon-image': markerType === 'bubble' ? 'bubble-marker' : 'star-marker',
-      'icon-size': 1.2,
+      'icon-size': 0.8,
       'icon-allow-overlap': true
     },
     paint: markerType === 'star' ? {
@@ -55,9 +56,9 @@ export default function MapComponent({ markerType, locations }: MapComponentProp
         ['linear'],
         ['get', 'point_count'],
         1, 0.3,
-        10, 0.6,
-        50, 0.9,
-        100, 1.0
+        3, 0.6,
+        7, 0.9,
+        12, 1.0
       ]
     } : {}
   }), [markerType]);
@@ -86,10 +87,42 @@ export default function MapComponent({ markerType, locations }: MapComponentProp
     filter: ['!', ['has', 'point_count']],
     layout: {
       'icon-image': markerType === 'bubble' ? 'bubble-marker' : 'star-marker',
-      'icon-size': 1.2,
+      'icon-size': 0.8,
+      'icon-allow-overlap': true
+    },
+    paint: markerType === 'star' ? {
+      'icon-opacity': 0.3
+    } : {}
+  }), [markerType]);
+
+  // Define user location layer
+  const userLocationLayer: LayerProps = useMemo(() => ({
+    id: 'user-location',
+    type: 'symbol',
+    source: 'user-location',
+    layout: {
+      'icon-image': 'red-star-marker',
+      'icon-size': 0.5,
       'icon-allow-overlap': true
     }
-  }), [markerType]);
+  }), []);
+
+  // Convert user location to GeoJSON format
+  const userLocationData = useMemo(() => {
+    if (!userLocation) return null;
+    
+    return {
+      type: 'FeatureCollection' as const,
+      features: [{
+        type: 'Feature' as const,
+        properties: { id: 'user' },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [userLocation.lng, userLocation.lat]
+        }
+      }]
+    };
+  }, [userLocation]);
 
   const handleMapLoad = (event: any) => {
     const map = event.target;
@@ -111,6 +144,15 @@ export default function MapComponent({ markerType, locations }: MapComponentProp
       }
     };
     starImg.src = '/star-marker-yellow.png';
+
+    // Load red star marker image for user location
+    const redStarImg = new Image();
+    redStarImg.onload = () => {
+      if (!map.hasImage('red-star-marker')) {
+        map.addImage('red-star-marker', redStarImg);
+      }
+    };
+    redStarImg.src = '/star-marker-red.png';
   };
 
   return (
@@ -138,6 +180,15 @@ export default function MapComponent({ markerType, locations }: MapComponentProp
           {markerType === 'bubble' && <Layer {...clusterCountLayer} />}
           <Layer {...unclusteredPointLayer} />
         </Source>
+        {userLocationData && (
+          <Source
+            id="user-location"
+            type="geojson"
+            data={userLocationData}
+          >
+            <Layer {...userLocationLayer} />
+          </Source>
+        )}
       </Map>
     </div>
   );

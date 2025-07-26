@@ -34,7 +34,7 @@ export default function Home() {
         {/* 地图容器 - 占据屏幕1/2 */}
         <div className="h-1/2 flex items-center justify-center p-4">
           <div className="w-full h-full rounded-lg overflow-hidden">
-            <BasicMap markerType="bubble" locations={defaultLocations} />
+            <BasicMap markerType="bubble" locations={defaultLocations} userLocation={defaultLocations[0]} />
           </div>
         </div>
 

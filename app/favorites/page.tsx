@@ -44,7 +44,7 @@ export default function FavoritesPage() {
           </div>
           
           <div className="relative w-full h-full rounded-lg overflow-hidden z-10">
-            <BasicMap markerType="star" locations={defaultLocations} />
+            <BasicMap markerType="star" locations={defaultLocations} userLocation={defaultLocations[0]} />
             
             {/* 统计信息 - 左下角 */}
             <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg z-10">
